@@ -15,7 +15,7 @@
 # Configuration
 # ==============================================================================
 from ..config import (FLUSH_INTERVAL_MS,
-                    BLEPIN, 
+                    BLEPIN,
                     BLESCAN_SHORT, BLESCAN_LONG,
                     DEFAULT_TARGET_DEVICE_NAME,
                     SERVICE_UUID, RX_CHARACTERISTIC_UUID, TX_CHARACTERISTIC_UUID,
@@ -43,7 +43,7 @@ import inspect
 # Array operations
 import numpy as np
 #
-# Bleak IO event 
+# Bleak IO event
 import asyncio
 #
 # Bluetooth library
@@ -55,7 +55,7 @@ from bleak.backends.device import BLEDevice
 from .IncompleteHTMLTracker import IncompleteHTMLTracker
 from .Qbluetoothctl_helper import BluetoothctlWrapper
 from .General_helper import wait_for_signal, connect, disconnect, qobject_alive
-try: 
+try:
     from PyQt6.QtCore import Qt, QObject, QThread, QTimer,  pyqtSignal, pyqtSlot
     from PyQt6.QtGui import QTextCursor
     ConnectionType = Qt.ConnectionType
@@ -75,7 +75,7 @@ try:
 except NameError:
     def profile(func):                                                         # no-op when not profiling
         return func
-    
+
 ############################################################################################################################################
 #
 # QBLESerial interaction with Graphical User Interface
@@ -137,11 +137,11 @@ class QBLESerial(QObject):
 
     # BLEAK
     scanDevicesRequest           = pyqtSignal(float)                           # scan for BLE devices with timeout [s]
-    connectDeviceRequest         = pyqtSignal(object, int, bool)               # connect to BLE device, mac, timeout, 
+    connectDeviceRequest         = pyqtSignal(object, int, bool)               # connect to BLE device, mac, timeout,
     disconnectDeviceRequest      = pyqtSignal()                                # disconnect from BLE device
     changeLineTerminationRequest = pyqtSignal(bytes)                           # request line termination to change
     startThroughputRequest       = pyqtSignal()                                # request that throughput timer is started
-    stopThroughputRequest        = pyqtSignal()                                # request that throughput timer is stopped 
+    stopThroughputRequest        = pyqtSignal()                                # request that throughput timer is stopped
     startTransceiverRequest      = pyqtSignal()                                # start transceiver (display of incoming text, connection remains)
     stopTransceiverRequest       = pyqtSignal()                                # stop transceiver (display of incoming text, connection remains)
     setupTransceiverFinished     = pyqtSignal()                                # request to setup transceiver finished
@@ -158,7 +158,7 @@ class QBLESerial(QObject):
 
     # bluetooth ctl
     pairDeviceRequest            = pyqtSignal(str,str)                         # pair with BLE device mac and pin
-    removeDeviceRequest          = pyqtSignal(str)                             # remove BLE device from systems paired list 
+    removeDeviceRequest          = pyqtSignal(str)                             # remove BLE device from systems paired list
     trustDeviceRequest           = pyqtSignal(str)                             # trust a device
     distrustDeviceRequest        = pyqtSignal(str)                             # distrust a device
     bleStatusRequest             = pyqtSignal(str)                             # request BLE device status
@@ -187,7 +187,7 @@ class QBLESerial(QObject):
         self.device                = ""                                        # BLE device
         self.device_info           = {}                                        # BLE device status
         self.rx                    = 0                                         # init throughput
-        self.tx                    = 0                                         # init throughput 
+        self.tx                    = 0                                         # init throughput
         self.textLineTerminator    = EOL_DEFAULT_BYTES                         # default line termination
 
         # self.isLogScrolling        = False                                   # keep track of log display scrolling
@@ -200,7 +200,7 @@ class QBLESerial(QObject):
 
         self.lastNumReceived       = 0
         self.lastNumSent           = 0
-    
+
         self.awaitingReconnection  = False
 
         self.record                = False                                     # record serial data
@@ -226,20 +226,20 @@ class QBLESerial(QObject):
         self.linesBufferTimer.setTimerType(PreciseTimerType)
         self.linesBufferTimer.setInterval(FLUSH_INTERVAL_MS)
         self.linesBufferTimer.timeout.connect(self.flushLinesBuffer)
-        
+
         # Not yet implemented
         self.htmlBuffer = ""
         self.htmlBufferTimer = QTimer(self)
         self.htmlBufferTimer.setTimerType(PreciseTimerType)
         self.htmlBufferTimer.setInterval(FLUSH_INTERVAL_MS)
         # self.htmlBufferTimer.timeout.connect(self.flushHTMLBuffer)
-        
+
         self.mtoc_on_deviceListReady = 0.
         self.mtoc_on_throughputReady = 0.
         self.mtoc_on_statusReady     = 0.
-        self.mtoc_on_receivedData    = 0. 
-        self.mtoc_on_receivedLines   = 0. 
-        self.mtoc_on_receivedHTML    = 0. 
+        self.mtoc_on_receivedData    = 0.
+        self.mtoc_on_receivedLines   = 0.
+        self.mtoc_on_receivedHTML    = 0.
         self.mtoc_appendTextLines    = 0.
         self.mtoc_appendText         = 0.
         self.mtoc_appendHtml         = 0.
@@ -267,7 +267,7 @@ class QBLESerial(QObject):
         self.text_widget = self.ui.plainTextEdit_Text                          # Text widget for displaying received data
         self.text_scroll_bar = self.text_widget.verticalScrollBar()            # Scroll bar for the text widget
 
-        self.html_tracker = IncompleteHTMLTracker()                            # Initialize the HTML tracker  
+        self.html_tracker = IncompleteHTMLTracker()                            # Initialize the HTML tracker
 
         if USE_BLUETOOTHCTL:
             self.hasBluetoothctl = (platform.system() == "Linux" )
@@ -327,7 +327,7 @@ class QBLESerial(QObject):
 
         # BLE Thread using custom AsyncThread
         self.bluetoothctlThread = QThread()                                    # create QThread object
-    
+
         # Create the BLE worker
         self.bluetoothctlWorker = BluetoothctlWorker()                         # create BLE worker object
         self.bluetoothctlWorker.moveToThread(           self.bluetoothctlThread)
@@ -341,9 +341,9 @@ class QBLESerial(QObject):
         # Connect Bluetoothctl worker / thread finished
         self.bluetoothctlWorker.finished.connect(       self.bluetoothctlThread.quit) # if worker emits finished quite worker thread
         self.bluetoothctlWorker.finished.connect(       self.bluetoothctlWorker.deleteLater) # delete worker at some time
-        self.bluetoothctlWorker.destroyed.connect(      lambda: setattr(self, "bluetoothctlWorker", None))    
+        self.bluetoothctlWorker.destroyed.connect(      lambda: setattr(self, "bluetoothctlWorker", None))
         self.bluetoothctlThread.finished.connect(       self.bluetoothctlThread.deleteLater) # delete thread at some time
-        self.bluetoothctlThread.destroyed.connect(      lambda: setattr(self, "bluetoothctlThread", None)) 
+        self.bluetoothctlThread.destroyed.connect(      lambda: setattr(self, "bluetoothctlThread", None))
         # There is no start method in the bluetoothctlWorker
         # self.bluetoothctlThread.started.connect(        self.bluetoothctlWorker.start, type = ConnectionType.QueuedConnection)
 
@@ -370,8 +370,8 @@ class QBLESerial(QObject):
         self.logger.log(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Bluetoothctl Worker started."
         )
-        
-        self.logger.log(logging.INFO, 
+
+        self.logger.log(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: QBLESerial initialized."
         )
 
@@ -403,9 +403,9 @@ class QBLESerial(QObject):
         self.mtoc_on_deviceListReady = 0.
         self.mtoc_on_throughputReady = 0.
         self.mtoc_on_statusReady     = 0.
-        self.mtoc_on_receivedData    = 0. 
-        self.mtoc_on_receivedLines   = 0. 
-        self.mtoc_on_receivedHTML    = 0. 
+        self.mtoc_on_receivedData    = 0.
+        self.mtoc_on_receivedLines   = 0.
+        self.mtoc_on_receivedHTML    = 0.
         self.mtoc_appendTextLines    = 0.
         self.mtoc_appendText         = 0.
         self.mtoc_appendHtml         = 0.
@@ -435,10 +435,10 @@ class QBLESerial(QObject):
         self.scanDevicesRequest.emit(float(BLESCAN_LONG))
         self.ui.pushButton_BLEScan.setEnabled(False)
         self.ui.pushButton_BLEConnect.setEnabled(False)
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: BLE device scan requested ({BLESCAN_LONG:.1f}s)."
         )
-        self.ui.statusBar().showMessage('BLE device scan requested.', 2000)            
+        self.ui.statusBar().showMessage('BLE device scan requested.', 2000)
 
     @pyqtSlot()
     def on_pushButton_BLEConnect(self):
@@ -449,13 +449,13 @@ class QBLESerial(QObject):
 
             if self.device:
                 self.connectDeviceRequest.emit(self.device, 10, False)
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Attempting to connect to device."
                 )
                 self.ui.statusBar().showMessage('BLE connection requested.', 2000)
 
             else:
-                self.logSignal.emit(logging.WARNING, 
+                self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: No device selected for connection."
                 )
 
@@ -463,22 +463,22 @@ class QBLESerial(QObject):
 
             if self.device:
                 self.disconnectDeviceRequest.emit()
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Attempting to disconnect from device."
                 )
                 self.ui.statusBar().showMessage('BLE disconnection requested.', 2000)
             else:
-                self.logSignal.emit(logging.WARNING, 
+                self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: No device selected for disconnection."
                 )
 
         else:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: User interface Connect button is labeled incorrectly."
             )
 
     @pyqtSlot()
-    def on_comboBoxDropDown_BLEDevices(self): 
+    def on_comboBoxDropDown_BLEDevices(self):
         "user selected a different BLE device from the drop down list"
 
         # disconnect current device
@@ -493,11 +493,11 @@ class QBLESerial(QObject):
         index=self.ui.comboBoxDropDown_Device.currentIndex()
         if index >= 0:
             self.device = self.ui.comboBoxDropDown_Device.itemData(index)      # BLE device from BLEAK scanner
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Selected device: {self.device.name}, Address: {self.device.address}"
             )
             self.ui.pushButton_BLEConnect.setEnabled(True)                     # will want to connect
-            if self.hasBluetoothctl: 
+            if self.hasBluetoothctl:
                 self.ui.pushButton_BLEPair.setEnabled(True)                    # uses bluetoothctl
                 self.ui.pushButton_BLETrust.setEnabled(True)                   # uses bluetoothctl
                 self.ui.pushButton_BLEStatus.setEnabled(True)                  # uses bluetoothctl
@@ -507,11 +507,11 @@ class QBLESerial(QObject):
             self.ui.pushButton_BLETrust.setText("Trust")
             self.ui.statusBar().showMessage(f'BLE device {self.device.name} selected.', 2000)
         else:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: No devices found"
             )
             self.ui.pushButton_BLEConnect.setEnabled(False)
-            if self.hasBluetoothctl: 
+            if self.hasBluetoothctl:
                 self.ui.pushButton_BLEPair.setEnabled(False)
                 self.ui.pushButton_BLETrust.setEnabled(False)
                 self.ui.pushButton_BLEStatus.setEnabled(False)
@@ -612,7 +612,7 @@ class QBLESerial(QObject):
     def on_pushButton_BLEStatus(self):
         if self.device is not None:
             self.bleStatusRequest.emit(self.device.address)
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: BLE devices status requested {self.device.name}"
             )
             self.ui.statusBar().showMessage('BLE device status requested.', 2000)
@@ -621,7 +621,7 @@ class QBLESerial(QObject):
     def on_statusReady(self, status):
         """
         pickup BLE device status
-        
+
         the status is:
         device_info = {
             "mac":       None,
@@ -633,12 +633,12 @@ class QBLESerial(QObject):
         }
         """
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         self.device_info = status
 
-        if (self.device_info["mac"] is not None) and (self.device_info["mac"] != "") and self.hasBluetoothctl: 
+        if (self.device_info["mac"] is not None) and (self.device_info["mac"] != "") and self.hasBluetoothctl:
             self.ui.pushButton_BLEPair.setEnabled(True)
             self.ui.pushButton_BLETrust.setEnabled(True)
             self.ui.pushButton_BLEPair.setText("Remove" if self.device_info["paired"] else "Pair")
@@ -647,13 +647,13 @@ class QBLESerial(QObject):
             self.ui.pushButton_BLEPair.setEnabled(False)
             self.ui.pushButton_BLETrust.setEnabled(False)
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Device status: {status}"
         )
 
         self.ui.statusBar().showMessage("BLE status updated", 2000)
 
-        if PROFILEME: 
+        if PROFILEME:
             toc = time.perf_counter()
             self.mtoc_on_statusReady = max((toc - tic), self.mtoc_on_statusReady)
 
@@ -661,7 +661,7 @@ class QBLESerial(QObject):
     def on_deviceListReady(self, devices:list):
         """pickup new list of devices"""
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         self.logSignal.emit(
@@ -671,7 +671,7 @@ class QBLESerial(QObject):
 
         self.ui.pushButton_BLEScan.setEnabled(True)                            # re-enable device scan, was turned of during scanning
 
-        # save current selected device 
+        # save current selected device
         currentIndex   = self.ui.comboBoxDropDown_Device.currentIndex()
         selectedDevice = self.ui.comboBoxDropDown_Device.itemData(currentIndex)
         selected_address = getattr(selectedDevice, "address", None)
@@ -681,7 +681,7 @@ class QBLESerial(QObject):
         self.ui.comboBoxDropDown_Device.clear()
         for device in devices:
             self.ui.comboBoxDropDown_Device.addItem(f"{device.name} ({device.address})", device)
-        
+
         # search for previous device and select it
         index_to_select = -1
         if selected_address or current_address:
@@ -710,13 +710,13 @@ class QBLESerial(QObject):
         if len(devices) > 0:
             self.ui.pushButton_BLEConnect.setEnabled(True)
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Device list updated."
         )
 
         self.ui.statusBar().showMessage("BLE device list updated", 2000)
 
-        if PROFILEME: 
+        if PROFILEME:
             toc = time.perf_counter()
             self.mtoc_on_deviceListReady = max((toc - tic), self.mtoc_on_deviceListReady ) # End performance tracking
 
@@ -748,16 +748,16 @@ class QBLESerial(QObject):
     @profile
     def on_receivedData(self, byte_array: bytearray):
         """
-        Receives a raw byte array from the ble device, 
+        Receives a raw byte array from the ble device,
         stores it in the byte array buffer,
         saves it to file if recording is enabled,
         """
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         if DEBUGSERIAL:
-            self.logSignal.emit(logging.DEBUG, 
+            self.logSignal.emit(logging.DEBUG,
                 f"[{self.instance_name[:15]:<15}]: Text received."
             )
 
@@ -772,7 +772,7 @@ class QBLESerial(QObject):
                 except Exception as e:
                     self.logSignal.emit(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Could not write to file {self.recordingFileName}. Error: {e}"
-                    )                    
+                    )
                     self.record = False
                     self.ui.checkBox_ReceiverRecord.setChecked(self.record)
                     self.recordingFile = None
@@ -821,7 +821,7 @@ class QBLESerial(QObject):
 
             self.text_widget.setUpdatesEnabled(False)
 
-            try: 
+            try:
 
                 # if more lines available then there are lines in terminal history,
                 # do a full redraw with the latest lines that fit in the terminal,
@@ -875,16 +875,16 @@ class QBLESerial(QObject):
     @profile
     def on_receivedLines(self, lines: list):
         """
-        Receives lines of text from the ble port, 
+        Receives lines of text from the ble port,
         Stores them in the lines buffer,
         Saves them to file if recording is enabled,
         """
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         if DEBUGSERIAL:
-            self.logSignal.emit(logging.DEBUG, 
+            self.logSignal.emit(logging.DEBUG,
                 f"[{self.instance_name[:15]:<15}]: Text lines received."
             )
 
@@ -917,11 +917,11 @@ class QBLESerial(QObject):
         Takes the content of the line buffer and displays it efficiently in the terminal
         This does not preserve the cursor position.
         """
-          
+
         if self.linesBuffer:
 
             if self.display:
-                if PROFILEME: 
+                if PROFILEME:
                     tic = time.perf_counter()                                  # Start performance tracking
 
                 at_bottom = self.text_scroll_bar.value() >= (self.text_scroll_bar.maximum() - self.text_scroll_bar.pageStep())
@@ -965,7 +965,7 @@ class QBLESerial(QObject):
                     self.text_scroll_bar.setValue(self.text_scroll_bar.maximum()) # Scroll to bottom for autoscroll
                     self.text_widget.setUpdatesEnabled(True)
 
-                if PROFILEME: 
+                if PROFILEME:
                     toc = time.perf_counter()                                  # End performance tracking
                     self.mtoc_appendTextLines = max((toc - tic),self.mtoc_appendTextLines ) # End performance tracking
 
@@ -973,7 +973,7 @@ class QBLESerial(QObject):
             self.linesBuffer.clear()
 
         else:
-            self.linesBufferTimer.stop()            
+            self.linesBufferTimer.stop()
 
     @pyqtSlot(str)
     @profile
@@ -984,7 +984,7 @@ class QBLESerial(QObject):
         Saves it to file if recording is enabled,
         """
 
-        if PROFILEME or DEBUGSERIAL: 
+        if PROFILEME or DEBUGSERIAL:
             tic = time.perf_counter()
 
         if DEBUGSERIAL:
@@ -1021,24 +1021,24 @@ class QBLESerial(QObject):
         HTML can only be appended to regular text widgets, not the plain text widget and that is slower.
         So I will need to create alternative rich text widget if HTML display is needed.
         """
-          
+
         if self.htmlBuffer:
 
 
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: Appending HTML to rich text widget not implemented."
             )
             return
 
             if self.display:
-                if PROFILEME: 
+                if PROFILEME:
                     tic = time.perf_counter()                                  # Start performance tracking
 
                 at_bottom = self.rich_text_scroll_bar.value() >= (self.rich_text_scroll_bar.maximum() - self.rich_text_scroll_bar.pageStep())
 
                 if not at_bottom:
                     return
-                
+
                 # Process HTML & detect incomplete tags
                 valid_html_part, self.htmlBuffer = self.html_tracker.detect_incomplete_html(self.htmlBuffer)
 
@@ -1050,10 +1050,10 @@ class QBLESerial(QObject):
                     self.rich_text_scroll_bar.setValue(self.rich_text_scroll_bar.maximum()) # Scroll to bottom for autoscroll
                     self.rich_text_widget.setUpdatesEnabled(True)
 
-                if PROFILEME: 
+                if PROFILEME:
                     toc = time.perf_counter()                                  # End performance tracking
                     self.mtoc_appendHTML = max((toc - tic),self.mtoc_appendHTML ) # End performance tracking
-            
+
             # Did not display but still need to clear buffer
             self.htmlBuffer = ""
 
@@ -1096,14 +1096,14 @@ class QBLESerial(QObject):
         # calculate throughput
         # deltaTime is in milli seconds -> *1000
         # numReceived and numSent are in kilo bytes -> /1024
-        if rx >=0: 
+        if rx >=0:
             self.rx = rx / deltaTime
-        if tx >=0: 
+        if tx >=0:
             self.tx = tx / deltaTime
 
         self.throughputUpdate.emit(float(self.rx), float(self.tx), "ble")
 
-        if PROFILEME: 
+        if PROFILEME:
             toc = time.perf_counter()
             self.mtoc_on_throughputReady = max((toc - tic), self.mtoc_on_throughputReady) # End performance tracking
 
@@ -1140,7 +1140,7 @@ class QBLESerial(QObject):
 
         # self.receiverIsRunning  = success
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Device {self.device.name} connection: {'successful' if success else 'failed'}"
         )
 
@@ -1159,7 +1159,7 @@ class QBLESerial(QObject):
         self.ui.pushButton_BLEConnect.setEnabled(True)
         self.ui.pushButton_BLEConnect.setText("Connect")
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Device {self.device.name} disconnection: {'successful' if success else 'failed'}"
         )
 
@@ -1306,13 +1306,13 @@ class QBLESerial(QObject):
 
     def cleanup(self):
         """
-        Perform cleanup tasks for QBLESerial, such as 
-          stopping timers, 
+        Perform cleanup tasks for QBLESerial, such as
+          stopping timers,
           disconnecting signals,
           and ensuring proper worker shutdown.
         """
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Cleaning up BLEAK & bluetoothctl workers."
         )
         self.ui.statusBar().showMessage('Cleaning up BLEAK and bluetoothctl workers.', 2000)
@@ -1321,7 +1321,7 @@ class QBLESerial(QObject):
             try:
                 self.recordingFile.close()
             except Exception as e:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Could not close file {self.recordingFileName}: {e}"
                 )
 
@@ -1373,7 +1373,7 @@ class QBLESerial(QObject):
             if not bleakThread.wait(1000):
                 self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: BLEAK Thread graceful stop timed out after 3000 ms; forcing quit.")
-                bleakThread.quit() 
+                bleakThread.quit()
                 if not bleakThread.wait(1000):
                     self.logSignal.emit(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: BLEAK Thread won’t quit; terminating as last resort.")
@@ -1418,7 +1418,7 @@ class QBLESerial(QObject):
                     except Exception:
                         pass
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Cleaned up."
         )
 
@@ -1432,7 +1432,7 @@ class QBLESerial(QObject):
 # change device
 # connect and disconnect device
 # change line termination
-# calculate throughput 
+# calculate throughput
 #
 # The worker uses a separate async thread handling BLE serial input and output
 # These routines have no access to the user interface,
@@ -1450,7 +1450,7 @@ class AsyncThread(QThread):
     """
 
     ready = pyqtSignal(object)                                                 # emits the loop once setup
-    
+
     def __init__(self):
         super().__init__()
         self._loop = None                                                      # ensure attribute exists before run()
@@ -1516,7 +1516,7 @@ class BleakWorker(QObject):
         schedule(coro)                         schedule a coroutine to run in the worker's loop
     """
 
-    logSignal            = pyqtSignal(int, str)  
+    logSignal            = pyqtSignal(int, str)
     deviceListReady      = pyqtSignal(list)
     connectingSuccess    = pyqtSignal(bool)
     disconnectingSuccess = pyqtSignal(bool)
@@ -1600,18 +1600,18 @@ class BleakWorker(QObject):
             label = getattr(coro, "__name__", type(coro).__name__)
         if not label:
             label = "coroutine"
-        
+
         fut = asyncio.run_coroutine_threadsafe(coro, self.loop)
         setattr(fut, "_task_label", label)
 
         def _log_ex(f):
             label = getattr(f, "_task_label", "coroutine")
-            
+
             if f.cancelled():
                 self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: {label} async task cancelled.")
                 return
-            
+
             try:
                 f.result()
             except Exception as e:
@@ -1622,7 +1622,7 @@ class BleakWorker(QObject):
                     emsg = repr(e)
                 self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: {label} async task error: {etype}: {emsg}")
-        
+
         fut.add_done_callback(_log_ex)
         return fut
 
@@ -1656,7 +1656,7 @@ class BleakWorker(QObject):
 
         if self.eol:
 
-            # EOL-based reading -> processing line by line 
+            # EOL-based reading -> processing line by line
             #------------------------------------------------------------------------
 
             self.bufferIn.extend(data)
@@ -1814,7 +1814,7 @@ class BleakWorker(QObject):
             return
         self._throughput_task = self.loop.create_task(self._throughput_loop(), name="throughput")
         self._throughput_task.add_done_callback(lambda t: setattr(self, "_throughput_task", None))
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Throughput timer is set up.")
 
     async def _throughput_loop(self):
@@ -1840,7 +1840,7 @@ class BleakWorker(QObject):
                 except asyncio.CancelledError:
                     pass
                 except Exception as e:
-                    self.logSignal.emit(logging.ERROR, 
+                    self.logSignal.emit(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Throughput task error: {e}"
                     )
             return _await()
@@ -1849,7 +1849,7 @@ class BleakWorker(QObject):
 
         self.throughputReady.emit(0, 0)
         self._throughput_task = None
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Throughput timer stopped."
         )
 
@@ -1870,13 +1870,13 @@ class BleakWorker(QObject):
         def _done(f):
             exc = f.exception()
             if exc:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Transceiver not started: {exc}"
                 )
             else:
                 self.receiverIsRunning = True
                 self.workerStateChanged.emit(True)
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Transceiver started, subscribed to notifications."
                 )
         fut.add_done_callback(_done)
@@ -1895,7 +1895,7 @@ class BleakWorker(QObject):
         def _done(f):
             exc = f.exception()
             if exc:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Transceiver stop failed: {exc}"
                 )
             else:
@@ -1904,7 +1904,7 @@ class BleakWorker(QObject):
                 self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: BLEAK client unsubscribed from notifications.")
         fut.add_done_callback(_done)
-                
+
     async def _stopTransceiver(self):
         await self.client.stop_notify(self.char_tx)
 
@@ -1947,7 +1947,7 @@ class BleakWorker(QObject):
         self.bytes_sent = 0
         self.bufferIn.clear()
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: BLEAK Serial Worker cleanup completed."
         )
 
@@ -1959,14 +1959,14 @@ class BleakWorker(QObject):
         Set the new line termination sequence.
         """
         if lineTermination is None:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: Line termination not changed, line termination string not provided."
             )
         else:
             self.eol = lineTermination
             self.dataReady_calls = 0
             self.eolWindow_start = 0.0
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Changed line termination to {repr(self.eol)}."
     )
 
@@ -1979,25 +1979,25 @@ class BleakWorker(QObject):
     async def _scanDevices(self, timeout: float = BLESCAN_LONG):
         """Scan for BLE devices offering the Nordic UART Service."""
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         try:
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Scanning for BLE devices ({timeout:.1f}s)."
             )
             devices = await BleakScanner.discover(timeout=float(timeout), return_adv=True)
         except Exception as e:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Error scanning for devices: {e}"
             )
             return
-        
+
         if not devices:
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: No devices found."
             )
-        
+
         self.NSUdevices = []
         seen_addresses = set()
         known_addresses = {
@@ -2012,7 +2012,7 @@ class BleakWorker(QObject):
         }
         known_names = {name.strip() for name in known_names if isinstance(name, str) and name.strip()}
         for device, adv in devices.values():
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Found device: {device.name} ({device.address}) RSSI: {adv.rssi} dBm"
             )
             suids = adv.service_uuids or ()
@@ -2030,11 +2030,11 @@ class BleakWorker(QObject):
                     )
 
         if not self.NSUdevices:
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Scan complete. No matching devices found."
             )
         else:
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Scan complete."
             )
         self.deviceListReady.emit(self.NSUdevices)
@@ -2051,11 +2051,11 @@ class BleakWorker(QObject):
     #     for dev in self.NSUdevices:
     #         if dev.address == mac:
     #             self.device = dev
-    #             self.logSignal.emit(logging.INFO, 
+    #             self.logSignal.emit(logging.INFO,
     #                 f"[{self.instance_name[:15]:<15}]: Device selected: {dev.name} ({dev.address})"
     #             )
     #             return
-    #     self.logSignal.emit(logging.WARNING, 
+    #     self.logSignal.emit(logging.WARNING,
     #         f"[{self.instance_name[:15]:<15}]: No device found with MAC {mac}"
     #     )
 
@@ -2082,7 +2082,7 @@ class BleakWorker(QObject):
                 if dev.name == name:
                     return dev
         return None
-    
+
     async def _connectDevice(self, device: BLEDevice, timeout: float, reconnect: bool):
         """
         handle the connection request to a BLE device.
@@ -2093,21 +2093,21 @@ class BleakWorker(QObject):
             reconnect (bool): Whether to reconnect on disconnection.
         """
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         self.device = device
         self.timeout = timeout
         self.reconnect = reconnect
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Connecting to device: {device.name} ({device.address})"
         )
 
         if self.device is not None:
             self.client = BleakClient(
-                self.device, 
-                disconnected_callback=self._handle_disconnected, 
+                self.device,
+                disconnected_callback=self._handle_disconnected,
                 timeout=self.timeout
             )
             try:
@@ -2126,7 +2126,7 @@ class BleakWorker(QObject):
                 if isinstance(self.mtu, int) and (self.mtu > ATT_HDR) and (self.mtu <= BLEMTUMAX):
                     self.BLEpayloadSize = self.mtu - ATT_HDR
                 else:
-                    self.mtu = BLEMTUDEFAULT 
+                    self.mtu = BLEMTUDEFAULT
                     self.BLEpayloadSize = BLEMTUDEFAULT  - ATT_HDR
 
                 service = self.services.get_service(SERVICE_UUID) if self.services else None
@@ -2135,8 +2135,8 @@ class BleakWorker(QObject):
                 self.char_tx = service.get_characteristic(TX_CHARACTERISTIC_UUID)
                 self.char_rx = service.get_characteristic(RX_CHARACTERISTIC_UUID)
 
-                self.connectingSuccess.emit(True) 
-                self.logSignal.emit(logging.INFO, 
+                self.connectingSuccess.emit(True)
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Connected to {self.device.name} "
                     f"MTU={self.mtu}, payload={self.BLEpayloadSize}"
                 )
@@ -2163,9 +2163,9 @@ class BleakWorker(QObject):
                             if self.client._backend.__class__.__name__ == "BleakClientBlueZDBus":
                                 acquire = getattr(self.client._backend, "_acquire_mtu", None)
                                 if callable(acquire):
-                                    try: 
+                                    try:
                                         await acquire()
-                                    except Exception: 
+                                    except Exception:
                                         pass
                             self.mtu = getattr(self.client, "mtu_size", None)
                             if isinstance(self.mtu, int) and (self.mtu > ATT_HDR) and (self.mtu <= BLEMTUMAX):
@@ -2185,7 +2185,7 @@ class BleakWorker(QObject):
                                 f"[{self.instance_name[:15]:<15}]: Connected after rescan MTU={self.mtu}, payload={self.BLEpayloadSize}"
                             )
                             return
-                        
+
                         except Exception as e2:
                             self.logSignal.emit(logging.ERROR,
                                 f"[{self.instance_name[:15]:<15}]: Rescan connect failed: {e2}"
@@ -2207,9 +2207,9 @@ class BleakWorker(QObject):
                 self.char_tx = None
                 self.char_rx = None
                 self.client = None
-                
+
         else:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: No device selected. Please select a device from the scan results."
             )
 
@@ -2222,7 +2222,7 @@ class BleakWorker(QObject):
         Callback when the BLE device is unexpectedly disconnected.
         Starts a background task to handle reconnection.
         """
-        self.logSignal.emit(logging.WARNING, 
+        self.logSignal.emit(logging.WARNING,
             f"[{self.instance_name[:15]:<15}]: Device disconnected: {self.device.name} ({self.device.address})"
         )
 
@@ -2233,7 +2233,7 @@ class BleakWorker(QObject):
         self.disconnectingSuccess.emit(True)                                   # UI: show Connect, disable send, etc.
 
         if not self.reconnect:                                                 # Check if reconnection is allowed
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Reconnection disabled. No attempt will be made."
             )
             self.client = None
@@ -2259,14 +2259,14 @@ class BleakWorker(QObject):
         ):
 
             try:
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Reconnection attempt {retry_attempts + 1} to {self.device.name}..."
                 )
                 await self.client.connect(timeout=10)
 
                 # When BLE device is reconnected, one needs to reacquire the services and MTU
                 self.services = self.client.services
-                if self.client._backend.__class__.__name__ == "BleakClientBlueZDBus": 
+                if self.client._backend.__class__.__name__ == "BleakClientBlueZDBus":
                     await self.client._backend._acquire_mtu()
                 self.mtu = getattr(self.client, "mtu_size", None)
                 if isinstance(self.mtu, int) and (self.mtu > ATT_HDR) and (self.mtu <= BLEMTUMAX):
@@ -2284,7 +2284,7 @@ class BleakWorker(QObject):
                 self.receiverIsRunning = True
                 self.workerStateChanged.emit(True)
 
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Reconnected to {self.device.name} with MTU={self.mtu} and notifications started."
                 )
                 retry_attempts = 0                                             # Reset retry attempts on success
@@ -2292,7 +2292,7 @@ class BleakWorker(QObject):
 
             except Exception as e:
                 retry_attempts += 1
-                self.logSignal.emit(logging.WARNING, 
+                self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: Reconnection attempt {retry_attempts} failed: {e}"
                 )
                 await asyncio.sleep(backoff)
@@ -2304,15 +2304,15 @@ class BleakWorker(QObject):
 
         # Exit conditions
         if retry_attempts >= max_retries:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to reconnect to {self.device.name} after {max_retries} attempts."
             )
         elif not self.reconnect:
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Reconnection attempts stopped by the user."
             )
         elif getattr(self.client, "is_connected", False):
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Already connected to {self.device.name}. Exiting reconnection loop."
             )
 
@@ -2344,14 +2344,14 @@ class BleakWorker(QObject):
         self.reconnect = False                                                 # Stop reconnection attempts
 
         if not self.client or not self.client.is_connected:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: No active connection to disconnect."
             )
             self.disconnectingSuccess.emit(False)
             return
 
         if getattr(self, "disconnecting", False):
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: Disconnection already in progress."
             )
             return
@@ -2359,10 +2359,10 @@ class BleakWorker(QObject):
         self.disconnecting = True                                              # Set disconnection flag
         try:
             await self.client.disconnect()
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Disconnected from device: {self.device.name} ({self.device.address})"
             )
-            # Reset client 
+            # Reset client
             self.client = None
             self.device = None
             self.services = None
@@ -2371,7 +2371,7 @@ class BleakWorker(QObject):
             # Emit success signal
             self.disconnectingSuccess.emit(True)
         except Exception as e:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Error during disconnection: {e}"
             )
             self.disconnectingSuccess.emit(False)
@@ -2393,7 +2393,7 @@ class BleakWorker(QObject):
     async def _sendBytes(self, byte_array: bytes):
         """Send provided bytes over BLE."""
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         if byte_array and self.client and self.client.is_connected and self.char_rx:
@@ -2403,15 +2403,15 @@ class BleakWorker(QObject):
                 chunk = byte_array[i:i+payload_size]
                 await self.client.write_gatt_char(char_rx, chunk, response=False) # response=False for speed, returns immediately
                 self.bytes_sent += len(chunk)
-            self.logSignal.emit(logging.DEBUG, 
+            self.logSignal.emit(logging.DEBUG,
                 f"[{self.instance_name[:15]:<15}]: Sent: {byte_array}"
             )
         else:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Not connected or no data to send."
             )
 
-        if PROFILEME: 
+        if PROFILEME:
             toc = time.perf_counter()
             self.mtoc_on_sendText = max((toc - tic), self.mtoc_on_sendText)    # End performance tracking
 
@@ -2421,7 +2421,7 @@ class BleakWorker(QObject):
     @profile
     async def _sendLine(self, line: bytes):
         """Send a single line of text (with EOL) over BLE."""
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         if self.eol:
@@ -2429,7 +2429,7 @@ class BleakWorker(QObject):
         else:
             await self._sendBytes(line)
 
-        if PROFILEME: 
+        if PROFILEME:
             toc = time.perf_counter()
             self.mtoc_on_sendLine = max((toc - tic), self.mtoc_on_sendLine)    # End performance tracking
 
@@ -2440,13 +2440,13 @@ class BleakWorker(QObject):
     @profile
     async def _sendLines(self, lines: list):
         """Send multiple lines of text over BLE."""
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         for line in lines:
             await self._sendLine(line)
 
-        if PROFILEME: 
+        if PROFILEME:
             toc = time.perf_counter()
             self.mtoc_on_sendLines = max((toc - tic), self.mtoc_on_sendLines)  # End performance tracking
 
@@ -2457,7 +2457,7 @@ class BleakWorker(QObject):
     async def _sendFile(self, filePath: Path):
         """Transmit a file to the BLE device."""
 
-        if PROFILEME: 
+        if PROFILEME:
             tic = time.perf_counter()
 
         if self.client and self.client.is_connected and self.char_rx:
@@ -2472,7 +2472,7 @@ class BleakWorker(QObject):
             except Exception as e:
                 self.logSignal.emit(logging.ERROR, f'Unexpected error opening "{filePath.name}": {e}')
                 return
-                
+
             if not data:
                 self.logSignal.emit(logging.WARNING, f'[{self.instance_name[:15]}]: File "{filePath.name}" is empty.')
                 return
@@ -2494,11 +2494,11 @@ class BleakWorker(QObject):
             self.logSignal.emit(logging.INFO, f'Finished transmission of "{filePath.name}".')
 
         else:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: BLE client not available or not connected."
             )
 
-        if PROFILEME: 
+        if PROFILEME:
             toc = time.perf_counter()
             self.mtoc_on_sendFile = max((toc - tic), self.mtoc_on_sendFile)    # End performance tracking
 
@@ -2575,7 +2575,7 @@ class BluetoothctlWorker(QObject):
         self.mtoc_on_distrustDeviceRequest = 0.
 
         self.bluetoothctlWrapper = None
- 
+
         self.PIN = BLEPIN                                                      # Placeholder PIN if required by pairing
 
         self.device_info = {
@@ -2640,8 +2640,8 @@ class BluetoothctlWorker(QObject):
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl not available."
             )
             return
-        
-        if PROFILEME: 
+
+        if PROFILEME:
             tic = time.perf_counter()
 
         if self.bluetoothctlWrapper is None:
@@ -2653,13 +2653,13 @@ class BluetoothctlWorker(QObject):
                 self.bluetoothctlWrapper.startup_completed_signal,
                 1000,
                 sender=self.bluetoothctlWrapper,
-            )            
+            )
             if not ok:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper startup timed out because of {reason}."
                 )
             else:
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper started: {args}."
                 )
 
@@ -2667,11 +2667,11 @@ class BluetoothctlWorker(QObject):
             self.bluetoothctlWrapper.get_device_info(mac=mac, timeout=2000)
             self.bluetoothctlWrapper.device_info_ready_signal.connect(self._on_device_info_ready)
             self.bluetoothctlWrapper.device_info_failed_signal.connect(self._on_device_info_failed)
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper status requested."
             )
         else:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper not available for status request."
             )
 
@@ -2701,13 +2701,13 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
     @pyqtSlot(str)
     def _on_device_info_failed(self, mac: str):
-        self.logSignal.emit(logging.ERROR, 
+        self.logSignal.emit(logging.ERROR,
             f"[{self.instance_name[:15]:<15}]: Failed to retrieve device info for MAC: {mac}"
         )
         if not disconnect(self.bluetoothctlWrapper.device_info_ready_signal, self._on_device_info_ready):
@@ -2723,7 +2723,7 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
@@ -2749,16 +2749,16 @@ class BluetoothctlWorker(QObject):
             self.bluetoothctlWrapper.log_signal.connect(self.logSignal)
             self.bluetoothctlWrapper.start()
             ok, args, reason = wait_for_signal(
-                self.bluetoothctlWrapper.startup_completed_signal, 
+                self.bluetoothctlWrapper.startup_completed_signal,
                 timeout_ms=1000,
                 sender=self.bluetoothctlWrapper
             )
             if not ok:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper startup timed out because of {reason}."
                 )
             else:
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper started: {args}."
                 )
 
@@ -2767,7 +2767,7 @@ class BluetoothctlWorker(QObject):
             self.bluetoothctlWrapper.device_pair_failed_signal.connect(self._on_pairing_failed)
             self.bluetoothctlWrapper.pair(mac=mac, pin=pin, timeout=5000, scantime=1000)
         else:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: No device selected or BluetoothctlWrapper not available."
             )
 
@@ -2777,15 +2777,15 @@ class BluetoothctlWorker(QObject):
 
     def _on_pairing_successful(self, mac: str):
         self.pairingSuccess.emit(True)
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Paired with {mac}"
         )
         if not disconnect(self.bluetoothctlWrapper.device_pair_succeeded_signal, self._on_pairing_successful):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_pair_succeeded_signal"
             )
         if not disconnect(self.bluetoothctlWrapper.device_pair_failed_signal, self._on_pairing_failed):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_pair_failed_signal"
             )
 
@@ -2793,22 +2793,22 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
     def _on_pairing_failed(self, mac: str):
         self.pairingSuccess.emit(False)
-        self.logSignal.emit(logging.ERROR, 
+        self.logSignal.emit(logging.ERROR,
             f"[{self.instance_name[:15]:<15}]: Pairing with {mac} unsuccessful"
         )
         if not disconnect(self.bluetoothctlWrapper.device_pair_succeeded_signal, self._on_pairing_successful):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_pair_succeeded_signal"
             )
 
         if not disconnect(self.bluetoothctlWrapper.device_pair_failed_signal, self._on_pairing_failed):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_pair_failed_signal"
             )
 
@@ -2816,7 +2816,7 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
@@ -2842,39 +2842,39 @@ class BluetoothctlWorker(QObject):
             self.bluetoothctlWrapper.log_signal.connect(self.logSignal)
             self.bluetoothctlWrapper.start()
             ok, args, reason = wait_for_signal(
-                self.bluetoothctlWrapper.startup_completed_signal, 
+                self.bluetoothctlWrapper.startup_completed_signal,
                 timeout_ms=1000,
                 sender=self.bluetoothctlWrapper
             )
             if not ok:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper startup timed out because of {reason}."
                 )
             else:
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper started: {args}."
                 )
 
         if mac is not None:
             if self.bluetoothctlWrapper:
                 if not connect(self.bluetoothctlWrapper.device_remove_succeeded_signal, self._on_removing_successful):
-                    self.logSignal.emit(logging.ERROR, 
+                    self.logSignal.emit(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Failed to connect device_remove_succeeded_signal"
                     )
                 if not connect(self.bluetoothctlWrapper.device_remove_failed_signal, self._on_removing_failed):
-                    self.logSignal.emit(logging.ERROR, 
+                    self.logSignal.emit(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Failed to connect device_remove_failed_signal"
                     )
                 self.bluetoothctlWrapper.remove(mac=mac, timeout=5000)
-                self.logSignal.emit(logging.WARNING, 
+                self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: BluetoothctlWrapper initiated device {mac} removal."
                 )
             else:
-                self.logSignal.emit(logging.WARNING, 
+                self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: BluetoothctlWrapper not available."
                 )
         else:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: No device selected or BluetoothctlWrapper not available."
             )
 
@@ -2884,15 +2884,15 @@ class BluetoothctlWorker(QObject):
 
     def _on_removing_successful(self, mac: str):
         self.removalSuccess.emit(True)
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Device {mac} removed"
         )
         if not disconnect(self.bluetoothctlWrapper.device_remove_succeeded_signal, self._on_removing_successful):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_remove_succeeded_signal"
             )
         if not disconnect(self.bluetoothctlWrapper.device_remove_failed_signal, self._on_removing_failed):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_remove_failed_signal"
             )
         self.device = None
@@ -2901,28 +2901,28 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
     def _on_removing_failed(self, mac: str):
         self.removalSuccess.emit(False)
-        self.logSignal.emit(logging.ERROR, 
+        self.logSignal.emit(logging.ERROR,
             f"[{self.instance_name[:15]:<15}]: Device {mac} removal unsuccessful"
         )
         if not disconnect(self.bluetoothctlWrapper.device_remove_succeeded_signal, self._on_removing_successful):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_remove_succeeded_signal"
             )
         if not disconnect(self.bluetoothctlWrapper.device_remove_failed_signal, self._on_removing_failed):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_remove_failed_signal"
             )
         # Cleanup bluetoothctl
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
@@ -2953,26 +2953,26 @@ class BluetoothctlWorker(QObject):
                 sender=self.bluetoothctlWrapper
             )
             if not ok:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper startup timed out because of {reason}."
                 )
             else:
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper started: {args}."
                 )
 
         if mac is not None and self.bluetoothctlWrapper:
             if not connect(self.bluetoothctlWrapper.device_trust_succeeded_signal, self._on_trust_successful):
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Failed to connect device_trust_succeeded_signal"
                 )
             if not connect(self.bluetoothctlWrapper.device_trust_failed_signal, self._on_trust_failed):
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Failed to connect device_trust_failed_signal"
                 )
             self.bluetoothctlWrapper.trust(mac=mac, timeout=2000)
         else:
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: No device selected or BluetoothctlWrapper not available."
             )
 
@@ -2982,15 +2982,15 @@ class BluetoothctlWorker(QObject):
 
     def _on_trust_successful(self, mac: str):
         self.trustSuccess.emit(True)
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Trusted {mac}"
         )
         if not disconnect(self.bluetoothctlWrapper.device_trust_succeeded_signal, self._on_trust_successful):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_trust_succeeded_signal"
             )
         if not disconnect(self.bluetoothctlWrapper.device_trust_failed_signal, self._on_trust_failed):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_trust_failed_signal"
             )
 
@@ -2998,21 +2998,21 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
     def _on_trust_failed(self, mac: str):
         self.trustSuccess.emit(False)
-        self.logSignal.emit(logging.ERROR, 
+        self.logSignal.emit(logging.ERROR,
             f"[{self.instance_name[:15]:<15}]: Pairing with {mac} unsuccessful"
         )
         if not disconnect(self.bluetoothctlWrapper.device_trust_succeeded_signal, self._on_trust_successful):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_trust_succeeded_signal"
             )
         if not disconnect(self.bluetoothctlWrapper.device_trust_failed_signal, self._on_trust_failed):
-            self.logSignal.emit(logging.ERROR, 
+            self.logSignal.emit(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to disconnect device_trust_failed_signal"
             )
 
@@ -3020,7 +3020,7 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
@@ -3051,34 +3051,34 @@ class BluetoothctlWorker(QObject):
                 sender=self.bluetoothctlWrapper,
             )
             if not ok:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper startup timed out because of {reason}."
                 )
             else:
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Bluetoothctl wrapper started: {args}."
                 )
 
         if mac is not None:
             if self.bluetoothctlWrapper:
                 if not connect(self.bluetoothctlWrapper.device_distrust_succeeded_signal, self._on_distrust_successful):
-                    self.logSignal.emit(logging.ERROR, 
+                    self.logSignal.emit(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Failed to connect device_distrust_succeeded_signal"
                     )
                 if not connect(self.bluetoothctlWrapper.device_distrust_failed_signal, self._on_distrust_failed):
-                    self.logSignal.emit(logging.ERROR, 
+                    self.logSignal.emit(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Failed to connect device_distrust_failed_signal"
                     )
                 self.bluetoothctlWrapper.distrust(mac=mac, timeout=2000)
-                self.logSignal.emit(logging.WARNING, 
+                self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: BluetoothctlWrapper initiated device {mac} distrust."
                 )
             else:
-                self.logSignal.emit(logging.WARNING, 
+                self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: BluetoothctlWrapper not available."
                 )
         else:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                 f"[{self.instance_name[:15]:<15}]: No device selected or BluetoothctlWrapper not available."
             )
 
@@ -3089,17 +3089,17 @@ class BluetoothctlWorker(QObject):
     def _on_distrust_successful(self, mac: str):
         self.distrustSuccess.emit(True)
 
-        self.logSignal.emit(logging.INFO, 
+        self.logSignal.emit(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Device {mac} distrusted"
         )
 
         if not disconnect(self.bluetoothctlWrapper.device_distrust_succeeded_signal, self._on_distrust_successful):
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Device distrust success signal could not be disconnected."
             )
 
         if disconnect(self.bluetoothctlWrapper.device_distrust_failed_signal, self._on_distrust_failed):
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Device distrust failed signal could not be disconnected"
             )
 
@@ -3107,13 +3107,13 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
     def _on_distrust_failed(self, mac: str):
         self.distrustSuccess.emit(False)
-        self.logSignal.emit(logging.ERROR, 
+        self.logSignal.emit(logging.ERROR,
             f"[{self.instance_name[:15]:<15}]: Device {mac} distrusted unsuccessful"
         )
         if not disconnect(self.bluetoothctlWrapper.device_distrust_succeeded_signal, self._on_distrust_successful):
@@ -3130,7 +3130,7 @@ class BluetoothctlWorker(QObject):
         if self.bluetoothctlWrapper:
             self.bluetoothctlWrapper.stop()
             self.bluetoothctlWrapper = None
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Bluetoothctl stopped."
             )
 
