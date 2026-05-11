@@ -6,9 +6,6 @@ __pycache__/
 #Backup files
 *.bak
 
-# Archive
-**/archive/
-
 # Linting
 .ruff_cahce/
 
@@ -18,7 +15,6 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-archive/
 develop-eggs/
 dist/
 artifacts/
