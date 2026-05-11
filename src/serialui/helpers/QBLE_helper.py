@@ -65,7 +65,7 @@ except Exception:
     from PyQt5.QtCore import Qt, QObject, QThread, QTimer, pyqtSignal, pyqtSlot
     from PyQt5.QtGui import QTextCursor
     ConnectionType = Qt
-    PreciseTimerType = QTimer.PreciseTimer
+    PreciseTimerType = Qt.PreciseTimer
     CursorEnd = QTextCursor.End
 #
 # Profiling

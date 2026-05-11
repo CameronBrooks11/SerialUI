@@ -87,7 +87,7 @@ except Exception:
     from PyQt5.QtGui import ( QBrush, QColor, QGuiApplication,
                               QOpenGLContext
     )
-    PreciseTimerType = QTimer.PreciseTimer
+    PreciseTimerType = Qt.PreciseTimer
     DOCUMENTS = QStandardPaths.DocumentsLocation
 #
 # Fastplotlib
