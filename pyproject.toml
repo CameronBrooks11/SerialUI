@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=60.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "serialui"
+version = "1.5.1"
+description = "Graphical UI & plotter for serial and BLE-UART data"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Urs Utzinger" }, { name = "Cameron K Brooks" }]
+dependencies = [
+    "PyQt5",
+    "pyqtgraph",
+    "PyOpenGL",
+    "numba",
+    "numpy",
+    "pyserial",
+    "markdown",
+    "bleak",
+    "cobs",
+    "qasync",
+    "scipy",
+    "zlib-wrapper",
+    "tamp",
+    "wmi; sys_platform=='win32'",
+    "pyudev; sys_platform=='linux'",
+]
+
+[project.scripts]
+serialui = "serialui.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"serialui" = ["ui/*.ui", "assets/*.png", "assets/*.ico", "assets/*.svg"]

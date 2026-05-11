@@ -3,7 +3,7 @@
 ################################################################################################################################
 import logging
 import re
-from helpers.colors import color_names_sweet16 as COLORS
+from .helpers.colors import color_names_sweet16 as COLORS
 ################################################################################################################################
 # Constants General
 VERSION                 = "1.5.1"                # this version
@@ -52,7 +52,7 @@ CACHE_FILE              = "wgpu_pipeline.cache"  # once GPU cache read and write
 ################################################################################################################################
 # Constants BLE
 # Medibrick
-DEFAULT_TARGET_DEVICE_NAME = "BLESerialDevice"  # The name of the BLE device to search for if its already connected  
+DEFAULT_TARGET_DEVICE_NAME = "BLESerialDevice"  # The name of the BLE device to search for if its already connected
                                                 # Program searches for all Nordic Serial UART service by default
 BLEPIN                  = "123456"              # Known pairing pin for Medibrick_BLE
 # UUIDs for the Nordic Serial UART service and characteristics
@@ -69,7 +69,7 @@ BLEMTUNORMAL            = 247                   # Normal MTU size
 BLEMTUDEFAULT           =  23                   # Default MTU size
 # Ideally devices send data so that LL fragmentation is avoided
 # BLE LL octet size can be set to 27 .. 251 bytes (with 4 bytes header) which results in ideal MTU of 247
-# Increasing MTU results in higher throughput, however max settings are set by the peripheral and might 
+# Increasing MTU results in higher throughput, however max settings are set by the peripheral and might
 # be lower than what we request.
 ################################################################################################################################
 # Constants Text Display
@@ -81,7 +81,7 @@ ANSI_ESCAPE             = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 ENCODING                = "utf-8"               # default encoding for text display
 FLUSH_INTERVAL_MS       = 100                   # [ms] 100ms = 10 Hz update of the text display (received data is buffered)
 DEFAULT_TEXT_LINES      = 500                   # number of lines in display window (less is faster,
-                                                # but with fast transfer rates, some data might be skipped 
+                                                # but with fast transfer rates, some data might be skipped
                                                 # when data is streamed to file, no data is skipped
 MAX_TEXT_LINES          = 5_000                 # max number of lines in display window (max value of user adjustable slider)
 MAX_BACKLOG_BYTES       = 1_000_000             # ~1 MB maximum backlog. when viewer scrolls up the text display,

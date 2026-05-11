@@ -3,7 +3,7 @@
 # Serial Communication App
 # ************************
 #
-# - Provides serial interface to send and receive data to/from 
+# - Provides serial interface to send and receive data to/from
 #     - serial port (USB, RS232)
 #     - serial BLE (Nordic UART Service)
 # - Displays received data in a scrollable text window with option to record to file.
@@ -102,7 +102,7 @@ def resource_path(relative_path: str) -> str:
         base_path = sys._MEIPASS
     else:
         # When running from source
-        base_path = os.path.abspath(".")
+        base_path = os.path.dirname(os.path.abspath(__file__))
 
     return os.path.join(base_path, relative_path)
 # ==============================================================================
@@ -196,7 +196,7 @@ if _selftest_rc >= 0:
 # Config
 # ==============================================================================
 # This will steer imports
-from config import (
+from .config import (
     USE_BLE, USE_3DPLOT, USE_FASTPLOTLIB, USE_BLUETOOTHCTL,
     VERSION, AUTHOR, DATE,
     DEFAULT_TEXT_LINES, MAX_TEXT_LINES, MAX_ROWS,
@@ -212,7 +212,7 @@ from config import (
 # Graphics Environment Setup
 # ==============================================================================
 # This needs to run before importing any QT, wgpu, pygfx, fastplotlib, pyqtgraph modules
-from helpers.General_helper import setup_graphics_env
+from .helpers.General_helper import setup_graphics_env
 if DEBUGCHART:
     setup_graphics_env(
         prefer_discrete_gpu=DISCRETE_GPU,                                      # use False to bias to iGPU
@@ -231,7 +231,7 @@ else:
 # Imports
 # ==============================================================================
 #
-# Basic libraries 
+# Basic libraries
 # ----------------------------------------
 import sys
 import os
@@ -240,7 +240,7 @@ import textwrap
 from markdown import markdown
 import logging
 #
-# QT imports, QT5 or QT6 
+# QT imports, QT5 or QT6
 # ----------------------------------------
 try:
     from PyQt6 import uic
@@ -248,9 +248,9 @@ try:
         QTimer, Qt, pyqtSlot, pyqtSignal, QStandardPaths, QCoreApplication
     )
     from PyQt6.QtWidgets import (
-        QMainWindow, QLineEdit, QSlider, 
-        QMessageBox, QDialog, QVBoxLayout, 
-        QTextEdit, QTabWidget, QWidget, 
+        QMainWindow, QLineEdit, QSlider,
+        QMessageBox, QDialog, QVBoxLayout,
+        QTextEdit, QTabWidget, QWidget,
         QPlainTextEdit, QApplication,
     )
     from PyQt6.QtGui import QIcon, QShortcut, QTextCursor, QTextOption,  QKeySequence, QGuiApplication, QPixmap, QFontDatabase
@@ -269,9 +269,9 @@ except Exception:
         QTimer, Qt, pyqtSlot, pyqtSignal, QStandardPaths, QCoreApplication
     )
     from PyQt5.QtWidgets import (
-        QMainWindow, QLineEdit, QSlider, 
-        QMessageBox, QDialog, QVBoxLayout, 
-        QTextEdit, QTabWidget, QWidget, QShortcut, 
+        QMainWindow, QLineEdit, QSlider,
+        QMessageBox, QDialog, QVBoxLayout,
+        QTextEdit, QTabWidget, QWidget, QShortcut,
         QPlainTextEdit, QApplication,
     )
     from PyQt5.QtGui import (
@@ -313,16 +313,16 @@ try:
 except Exception:
     pass
 #
-# Program's local class imports 
+# Program's local class imports
 # ----------------------------------------
 #
-from helpers.Qgraph_helper          import QChart
-from helpers.Qserial_helper         import QSerial
-from helpers.USB_SerialPortMonitor  import QUSBMonitor
-from helpers.General_helper         import (clip_value, connect, disconnect, select_file, 
+from .helpers.Qgraph_helper          import QChart
+from .helpers.Qserial_helper         import QSerial
+from .helpers.USB_SerialPortMonitor  import QUSBMonitor
+from .helpers.General_helper         import (clip_value, connect, disconnect, select_file,
                                             confirm_overwrite_append)
 if USE_BLE:
-    from helpers.QBLE_helper        import QBLESerial 
+    from .helpers.QBLE_helper        import QBLESerial
 #
 # Profiling
 # ----------------------------------------
@@ -382,7 +382,7 @@ class mainWindow(QMainWindow):
     rxStopRequest          = pyqtSignal()                                      # stop transceivers (whoever is wired)
     throughputStartRequest = pyqtSignal()                                      # start throughput (whoever is wired)
     throughputStopRequest  = pyqtSignal()                                      # stop throughput (whoever is wired)
-    
+
     # ==========================================================================
     # Initialize
     # ==========================================================================
@@ -417,12 +417,12 @@ class mainWindow(QMainWindow):
         self.isPlotting   = False                                              # chart receiver status request
         self.startup_work_scheduled = False
         self.lineSendHistory     = []                                          # previously sent text (e.g. commands)
-        self.lineSendHistoryIndx = -1               
+        self.lineSendHistoryIndx = -1
         self.textLineTerminator = DEFAULT_LINETERMINATOR
 
         # User Interface
         # ----------------------------------------
-        ui_file = resource_path(os.path.join("assets", "serialUI.ui"))
+        ui_file = resource_path(os.path.join("ui", "serialUI.ui"))
         self.ui = uic.loadUi(ui_file, self)
         self.setWindowTitle("Serial GUI")
 
@@ -444,7 +444,7 @@ class mainWindow(QMainWindow):
         self.log_widget.setReadOnly(True)                                      # prevent user edits
         self.log_widget.setWordWrapMode(NO_WORDWRAP)                           # no wrapping for better performance
         self.log_widget.setUndoRedoEnabled(False)
-        self.log_widget.setMaximumBlockCount(DEFAULT_TEXT_LINES)               # 
+        self.log_widget.setMaximumBlockCount(DEFAULT_TEXT_LINES)               #
         self.log_widget.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
         self.log_scroll_bar = self.log_widget.verticalScrollBar()
@@ -577,7 +577,7 @@ class mainWindow(QMainWindow):
             self.ui.pushButton_BLEScan.setEnabled(False)
             self.ui.pushButton_BLEConnect.setEnabled(False)
             self.ui.pushButton_toSerial.setEnabled(True)
-        
+
         if USE_BLUETOOTHCTL:
             self.ui.pushButton_BLEPair.setEnabled(True)
             self.ui.pushButton_BLETrust.setEnabled(True)
@@ -631,7 +631,7 @@ class mainWindow(QMainWindow):
 
         # Create user interface hook for Serial
         self.serial = QSerial(parent=self, ui=self.ui)                         # create serial user interface object
- 
+
         # Signals from mainWindow to Serial (UI
         self.mtocRequest.connect(                           self.serial.on_mtocRequest) # connect mtoc request to worker
         # Signals handled elsewhere:
@@ -919,7 +919,7 @@ class mainWindow(QMainWindow):
         self.handle_log(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Menu initialized."
         )
-        
+
         # Status Bar
         # ----------------------------------------
         self.statusTimer = QTimer(self)
@@ -928,7 +928,7 @@ class mainWindow(QMainWindow):
         self.handle_log(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Status Bar initialized."
         )
-        
+
         # Display UI
         # ----------------------------------------
         self.show()
@@ -952,7 +952,7 @@ class mainWindow(QMainWindow):
         self.handle_log(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Obtaining profiling info."
         )
-                
+
         if USE_BLE:
             ble_status = "running" if self.ble.receiverIsRunning else "off"
         else:
@@ -1012,7 +1012,7 @@ class mainWindow(QMainWindow):
             self.log_widget.setUpdatesEnabled(True)
 
         elif level >= self.logger.getEffectiveLevel() or level ==-2:
-            # regular log message > -1, 
+            # regular log message > -1,
             # forced display, disregarding log level== -2
             #
             # Format the message
@@ -1070,7 +1070,7 @@ class mainWindow(QMainWindow):
         </style>
         {html_content}
         """
-        
+
         # Create a QDialog to display the readme content
         dialog = QDialog(self)
         dialog.setWindowTitle("Help")
@@ -1135,7 +1135,7 @@ class mainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_pushButton_toBLE(self) -> None:
-        """ 
+        """
         Switch to BLE
         """
         if not USE_BLE:
@@ -1189,7 +1189,7 @@ class mainWindow(QMainWindow):
         disconnect(self.mtocRequest,             self.serial.on_mtocRequest)
         disconnect(self.mtocRequest,             self.chart.on_mtocRequest)
         disconnect(self.mtocRequest,             self.usbmonitor.on_mtocRequest)
-        
+
         disconnect(self.sendFileRequest,         self.serial.sendFileRequest)
         disconnect(self.sendTextRequest,         self.serial.sendTextRequest)
         disconnect(self.sendLineRequest,         self.serial.sendLineRequest)
@@ -1209,7 +1209,7 @@ class mainWindow(QMainWindow):
 
         self.usbmonitor.cleanup()                                              # stop the USB monitor thread
         self.serial.cleanup()                                                  # close serial port and stop thread
-        if USE_BLE: 
+        if USE_BLE:
             self.ble.cleanup()                                                 # close BLE connection and stop thread
         self.chart.cleanup()                                                   # stop the chart timer
 
@@ -1282,7 +1282,7 @@ class mainWindow(QMainWindow):
 
         self.ui.lineEdit_Text.setText(self.lineSendHistory[self.lineSendHistoryIndx])
         self.ui.statusBar().showMessage("Command retrieved from history.", 2000)
-        
+
     @pyqtSlot()
     def on_downArrowPressed(self) -> None:
         """
@@ -1292,7 +1292,7 @@ class mainWindow(QMainWindow):
             self.ui.lineEdit_Text.setText("")
             self.ui.statusBar().showMessage("No commands in history.", 2000)
             return
-    
+
         if self.lineSendHistoryIndx < len(self.lineSendHistory) - 1:
             self.lineSendHistoryIndx += 1
             self.ui.lineEdit_Text.setText(self.lineSendHistory[self.lineSendHistoryIndx])
@@ -1309,24 +1309,24 @@ class mainWindow(QMainWindow):
 
         if DEBUGKEYINPUT:
             tic = time.perf_counter()
-            self.handle_log(logging.DEBUG, 
+            self.handle_log(logging.DEBUG,
                 f"[{self.instance_name[:15]:<15}]: Text entering detected at {tic}"
             )
 
         text = self.ui.lineEdit_Text.text()                                    # obtain text from send input window
 
         # Line Terminator "\n"  or "\r\n"
-        #  - "\n" when user selected "\n" in drop down 
+        #  - "\n" when user selected "\n" in drop down
         #  - "\r\n" when ("\r\n" or "" or "\r")
         eol = self.textLineTerminator if self.textLineTerminator not in {b"", b"\r"} else b"\r\n"
 
-        self.runMonitoringRequest.emit(True)            
+        self.runMonitoringRequest.emit(True)
 
         if not text:
             # No text provided, empty line
 
             text_bytearray = eol
-            self.handle_log(logging.INFO, 
+            self.handle_log(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Sending empty line"
             )
 
@@ -1335,17 +1335,17 @@ class mainWindow(QMainWindow):
 
             self.lineSendHistory.append(text)                                  # keep history of previously sent commands
             self.lineSendHistoryIndx = len(self.lineSendHistory)               # reset history pointer
-        
+
             try:
                 text_bytearray = text.encode(self.encoding, errors="replace") + eol # add line termination
             except Exception as e:
-                self.handle_log(logging.ERROR, 
+                self.handle_log(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Encoding error: {e}"
                 )
                 return
 
         if DEBUGKEYINPUT:
-            self.handle_log(logging.DEBUG, 
+            self.handle_log(logging.DEBUG,
                 f"[{self.instance_name[:15]:<15}]: Text ready to emit {time.perf_counter()}"
             )
 
@@ -1356,7 +1356,7 @@ class mainWindow(QMainWindow):
 
         if DEBUGKEYINPUT:
             toc = time.perf_counter()
-            self.handle_log(logging.DEBUG, 
+            self.handle_log(logging.DEBUG,
                 f"[{self.instance_name[:15]:<15}]: Text emission completed in {1000*(toc - tic):.2f} ms."
             )
 
@@ -1444,7 +1444,7 @@ class mainWindow(QMainWindow):
         if htmlBufferTimerBLE_was_active:
             self.ble.htmlBufferTimer.start()
 
-        self.handle_log(logging.INFO, 
+        self.handle_log(logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Text display cleared."
         )
         self.ui.statusBar().showMessage("Text Display Cleared.", 2000)
@@ -1461,14 +1461,14 @@ class mainWindow(QMainWindow):
                 f"[{self.instance_name[:15]:<15}]: Turning text display on."
             )
             self.ui.statusBar().showMessage("Text Display Starting", 2000)
-            
+
         else:
             # STOP text display
             self.runMonitoringRequest.emit(False)
-            self.handle_log(logging.DEBUG, 
+            self.handle_log(logging.DEBUG,
                 f"[{self.instance_name[:15]:<15}]: Turning text display off."
             )
-            self.ui.statusBar().showMessage('Text Display Stopping.', 2000)            
+            self.ui.statusBar().showMessage('Text Display Stopping.', 2000)
 
     @pyqtSlot()
     def on_pushButton_ReceiverSave(self) -> None:
@@ -1496,7 +1496,7 @@ class mainWindow(QMainWindow):
         if file_path.exists():                                                 # check if file already exists
             mode = confirm_overwrite_append(offer_append=True)
             if mode == "c":                                                    # cancel
-                self.handle_log(logging.INFO, 
+                self.handle_log(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Save cancelled."
                 )
                 return
@@ -1507,12 +1507,12 @@ class mainWindow(QMainWindow):
             # check if fname is valid, user can select cancel
             with open(file_path, mode, encoding=self.encoding) as f:
                 f.write(self.text_widget.toPlainText())
-            self.handle_log(logging.INFO, 
+            self.handle_log(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Serial Monitor text saved to {file_path.name}."
             )
             self.ui.statusBar().showMessage("Serial Monitor text saved.", 2000)
         except Exception as e:
-            self.handle_log(logging.ERROR, 
+            self.handle_log(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Error saving Serial Monitor text to {file_path.name}: {e}"
             )
             self.ui.statusBar().showMessage(f"Error saving Serial Monitor text: {e}", 5000)
@@ -1525,7 +1525,7 @@ class mainWindow(QMainWindow):
                 stdFileName = (
                     QStandardPaths.writableLocation(DOCUMENTS)
                     + "/Serial.txt"
-                ) 
+                )
             else:
                 stdFileName = self.recordingFileName
 
@@ -1550,7 +1550,7 @@ class mainWindow(QMainWindow):
                     self.ble.recordingFile = None
                     self.ble.recordingFileName = ""
                 return
-            
+
             if file_path.exists():                                             # Check if file already exists
                 mode = confirm_overwrite_append(offer_append=True)
                 if mode == "c":                                                # Cancel
@@ -1569,10 +1569,10 @@ class mainWindow(QMainWindow):
             else:
                 mode = "wb"                                                    # default to write mode if file doesn't exist
 
-            try:    
+            try:
                 self.recordingFile = open(file_path, mode)
                 mode_text = "write" if mode == "wb" else "append"
-                self.handle_log(logging.INFO, 
+                self.handle_log(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Recording to file {file_path.name} in mode {mode_text}."
                 )
                 self.serial.record = True
@@ -1583,7 +1583,7 @@ class mainWindow(QMainWindow):
                     self.ble.recordingFile = self.recordingFile
                     self.ble.recordingFileName = str(file_path)
             except Exception as e:
-                self.handle_log(logging.ERROR, 
+                self.handle_log(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Could not open file {file_path.name} in mode {mode}: {e}."
                 )
                 self.record = False
@@ -1600,11 +1600,11 @@ class mainWindow(QMainWindow):
                 try:
                     self.recordingFile.flush()
                     self.recordingFile.close()
-                    self.handle_log(logging.INFO, 
+                    self.handle_log(logging.INFO,
                         f"[{self.instance_name[:15]:<15}]: Recording to file {self.recordingFile.name} stopped."
                     )
                 except Exception as e:
-                    self.handle_log(logging.ERROR, 
+                    self.handle_log(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Could not close file {self.recordingFile.name}: {e}."
                     )
                 self.recordingFile = None
@@ -1679,7 +1679,7 @@ class mainWindow(QMainWindow):
         if self.historySliderTimer.isActive():
             self.historySliderTimer.stop()
         self.applyHistoryLimit()
-        
+
     @pyqtSlot()
     def applyHistoryLimit(self):
         """
@@ -1718,7 +1718,7 @@ class mainWindow(QMainWindow):
         Serial Terminal History Text Edit Handling
         Updates the slider and the history range when text is entered manually.
         """
-        try: 
+        try:
             value = int(self.lineEdit_History.text().strip())
             value = clip_value(value, 50, MAX_TEXT_LINES)
             self.maxlines = value
@@ -1734,7 +1734,7 @@ class mainWindow(QMainWindow):
 
         except ValueError:
             self.lineEdit_History.setText(str(self.maxlines))
-            
+
             self.handle_log(logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Invalid value for history: {self.lineEdit_History.text()}"
             )
@@ -1761,7 +1761,7 @@ class mainWindow(QMainWindow):
             ok &= connect(self.throughputStopRequest,  self.serial.stopThroughputRequest)
             self.txrxReady_wired_to_serial = ok
             if ok:
-                self.handle_log(logging.DEBUG, 
+                self.handle_log(logging.DEBUG,
                     f"[{self.instance_name[:15]:<15}]: TX/RX wired to Serial."
                 )
                 # If monitor/plotter is running, start now
@@ -1769,7 +1769,7 @@ class mainWindow(QMainWindow):
                     self.rxStartRequest.emit()
                     self.throughputStartRequest.emit()
             else:
-                self.handle_log(logging.ERROR, 
+                self.handle_log(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Could not wire TX/RX to Serial."
                 )
         else:
@@ -1787,11 +1787,11 @@ class mainWindow(QMainWindow):
             ok &= disconnect(self.throughputStopRequest,  self.serial.stopThroughputRequest)
             self.txrxReady_wired_to_serial = not ok
             if ok:
-                self.handle_log(logging.DEBUG, 
+                self.handle_log(logging.DEBUG,
                     f"[{self.instance_name[:15]:<15}]: TX disconnected from Serial."
                 )
             else:
-                self.handle_log(logging.ERROR, 
+                self.handle_log(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Could not disconnect TX from Serial."
                 )
 
@@ -1817,14 +1817,14 @@ class mainWindow(QMainWindow):
             ok &= connect(self.throughputStopRequest,  self.ble.stopThroughputRequest)
             self.txrxReady_wired_to_ble = ok
             if ok:
-                self.handle_log(logging.DEBUG, 
+                self.handle_log(logging.DEBUG,
                     f"[{self.instance_name[:15]:<15}]: TX/RX wired to BLE."
                 )
                 if (self.isMonitoring or self.isPlotting):
                     self.rxStartRequest.emit()
                     self.throughputStartRequest.emit()
             else:
-                self.handle_log(logging.ERROR, 
+                self.handle_log(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Could not wire TX/RX to BLE."
                 )
         else:
@@ -1841,11 +1841,11 @@ class mainWindow(QMainWindow):
             ok &= disconnect(self.throughputStopRequest,  self.ble.stopThroughputRequest)
             self.txrxReady_wired_to_ble = not ok
             if ok:
-                self.handle_log(logging.DEBUG, 
+                self.handle_log(logging.DEBUG,
                     f"[{self.instance_name[:15]:<15}]: TX disconnected from BLE."
                 )
             else:
-                self.handle_log(logging.ERROR, 
+                self.handle_log(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: Could not disconnect TX from BLE."
                 )
 
@@ -1865,7 +1865,7 @@ class mainWindow(QMainWindow):
 
         self.logger.setLevel(level)
 
-        self.ui.statusBar().showMessage("Log level changed.", 2000)            
+        self.ui.statusBar().showMessage("Log level changed.", 2000)
 
     # ==========================================================================
     # Receiver Functions: Handles Serial and BLE Receiver
@@ -1879,7 +1879,7 @@ class mainWindow(QMainWindow):
 
         When text display is requested we connect the signals from the serial or ble worker to the display function
         When charting is requested, we connect the signals from the serial or ble worker to the charting function
-        
+
         When either monitoring or charting is requested we start the serial/ble text receiver and the throughput calculator
 
         If neither of them is requested we stop the serial/ble text receiver and the throughput calculator
@@ -1893,7 +1893,7 @@ class mainWindow(QMainWindow):
                 f"[{self.instance_name[:15]:<15}]: Handle_ReceiverRunning called by {sender} at {time.perf_counter()}."
             )
 
-        # Plotting 
+        # Plotting
         # ----------------------------------------
         if sender == self.chart:
             if runIt and not self.isPlotting:
@@ -1951,7 +1951,7 @@ class mainWindow(QMainWindow):
                     self.handle_log(logging.ERROR,
                         f"[{self.instance_name[:15]:<15}]: Disconnect serial chart signals failed: {e}"
                     )
-                if USE_BLE: 
+                if USE_BLE:
                     try:
                         self.ble.disconnect_receivedLines(self.chart.on_receivedLines) # disconnect chart display to ble receiver signal
                         self.ble.disconnect_receivedData(self.chart.on_receivedData) # disconnect chart display to ble receiver signal
@@ -1969,8 +1969,8 @@ class mainWindow(QMainWindow):
                 self.handle_log( logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: Should not end up here when starting/stopping charting."
                 )
- 
-        # Monitoring 
+
+        # Monitoring
         # ----------------------------------------
         elif sender == self:
 
@@ -2053,7 +2053,7 @@ class mainWindow(QMainWindow):
             self.rxStopRequest.emit()
             self.ui.lineEdit_Text.setEnabled(False)
             self.ui.pushButton_SendFile.setEnabled(False)
-            
+
         else:
             # We are plotting or monitoring data
             self.throughputStartRequest.emit()
@@ -2062,7 +2062,7 @@ class mainWindow(QMainWindow):
             self.ui.pushButton_SendFile.setEnabled(True)
 
 ############################################################################################################################################
-# Main 
+# Main
 ############################################################################################################################################
 
 if __name__ == "__main__":
@@ -2075,7 +2075,7 @@ if __name__ == "__main__":
     sh.setFormatter(logging.Formatter(fmt))
     root_logger.addHandler(sh)
     root_logger.propagate = False
-    
+
     app = QApplication(sys.argv)
     base_dir = os.path.dirname(os.path.abspath(__file__))
     app.setWindowIcon(QIcon(os.path.join(base_dir, "assets", "icon_48.png")))

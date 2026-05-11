@@ -11,7 +11,7 @@
 # ==============================================================================
 # Configuration
 # ==============================================================================
-from config import (PROFILEME, DEBUGSERIAL, DEBUG_LEVEL,
+from ..config import (PROFILEME, DEBUGSERIAL, DEBUG_LEVEL,
                     FLUSH_INTERVAL_MS,
                     DEFAULT_BAUDRATE, SERIAL_BUFFER_SIZE,
                     EOL_DICT, EOL_DICT_INV, EOL_DEFAULT_BYTES, EOL_DEFAULT_LABEL,
@@ -33,8 +33,8 @@ from difflib import SequenceMatcher
 #
 # Custom Imports
 # ----------------------------------------
-from helpers.IncompleteHTMLTracker import IncompleteHTMLTracker
-from helpers.General_helper import wait_for_signal, connect, disconnect, qobject_alive
+from .IncompleteHTMLTracker import IncompleteHTMLTracker
+from .General_helper import wait_for_signal, connect, disconnect, qobject_alive
 #
 # QT Libraries
 # ----------------------------------------

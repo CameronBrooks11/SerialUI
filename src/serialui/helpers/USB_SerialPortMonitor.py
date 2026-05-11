@@ -11,7 +11,7 @@
 # ==============================================================================
 # Configuration
 # ==============================================================================
-from config import ( USB_POLLING_INTERVAL,
+from ..config import ( USB_POLLING_INTERVAL,
                      PROFILEME, DEBUG_LEVEL )
 # ==============================================================================
 # Imports
@@ -39,7 +39,7 @@ except Exception:
     except Exception:
         _QSPI = None
 #
-from helpers.General_helper import wait_for_signal
+from .General_helper import wait_for_signal
 
 ############################################################################################################################################
 #

@@ -1,0 +1,15 @@
+pyqt5
+pyqtgraph
+PyOpenGL
+numba
+numpy
+pyserial
+markdown
+wmi ; sys_platform == 'win32'
+pyudev ; sys_platform == 'linux'
+bleak
+cobs
+qasync
+scipy
+zlib-wrapper
+tamp

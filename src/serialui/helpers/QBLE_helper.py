@@ -14,7 +14,7 @@
 # ==============================================================================
 # Configuration
 # ==============================================================================
-from config import (FLUSH_INTERVAL_MS,
+from ..config import (FLUSH_INTERVAL_MS,
                     BLEPIN, 
                     BLESCAN_SHORT, BLESCAN_LONG,
                     DEFAULT_TARGET_DEVICE_NAME,
@@ -52,9 +52,9 @@ from bleak.backends.device import BLEDevice
 #
 # Custom Imports
 # ----------------------------------------
-from helpers.IncompleteHTMLTracker import IncompleteHTMLTracker
-from helpers.Qbluetoothctl_helper import BluetoothctlWrapper
-from helpers.General_helper import wait_for_signal, connect, disconnect, qobject_alive
+from .IncompleteHTMLTracker import IncompleteHTMLTracker
+from .Qbluetoothctl_helper import BluetoothctlWrapper
+from .General_helper import wait_for_signal, connect, disconnect, qobject_alive
 try: 
     from PyQt6.QtCore import Qt, QObject, QThread, QTimer,  pyqtSignal, pyqtSlot
     from PyQt6.QtGui import QTextCursor

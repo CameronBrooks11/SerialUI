@@ -1,9 +1,12 @@
 [submodule "Python_libraries/cobs-python"]
-	path = Python_libraries/cobs-python
+	path = archive/Python_libraries/cobs-python
 	url = https://github.com/cmcqueen/cobs-python.git
 [submodule "Python_libraries/tamp"]
-	path = Python_libraries/tamp
+	path = archive/Python_libraries/tamp
 	url = https://github.com/BrianPugh/tamp.git
 [submodule "helpers/line_parsers/ankerl"]
-	path = helpers/line_parsers/ankerl
+	path = src/serialui/helpers/line_parsers/ankerl
 	url = https://github.com/martinus/unordered_dense.git
+[submodule "examples/libraries/adpcm-xq"]
+	path = examples/libraries/adpcm-xq
+	url = https://github.com/dbry/adpcm-xq.git

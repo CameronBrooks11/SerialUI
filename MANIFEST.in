@@ -1,0 +1,2 @@
+recursive-include src/serialui/ui     *.ui
+recursive-include src/serialui/assets *.png *.ico *.svg

@@ -2,7 +2,7 @@
 # QT Chart Helper
 #
 # Display data in either
-#  - PyQtGraph 
+#  - PyQtGraph
 #  - fastplotlib
 #
 # This code is maintained by Urs Utzinger
@@ -11,12 +11,12 @@
 # ==============================================================================
 # Configuration
 # ==============================================================================
-from config import ( MAX_ROWS, MAX_COLS, MAX_ROWS_LINEDATA,
+from ..config import ( MAX_ROWS, MAX_COLS, MAX_ROWS_LINEDATA,
                      USE_FASTPLOTLIB, USE_PARSERACCEL, CACHE_FILE,
                      DEBUGCHART, PROFILEME, DEBUG_LEVEL, DEBUGFASTPLOTLIB,
                      COLORS, AXIS_FONT_COLOR, AXIS_COLOR, GRID_COLOR, GRID_MINOR_COLOR,
                      FRAME_PLANE_COLOR, FRAME_TITLE_COLOR, LEGEND_FONT_COLOR,
-                     GRID_ALPHA, TICK_COLOR, POINT_COLOR, 
+                     GRID_ALPHA, TICK_COLOR, POINT_COLOR,
                      CHART_BACKGROUND_COLOR, LEGEND_BACKGROUND_COLOR,
                      MAJOR_TICKS, MINOR_TICKS,
                      LINEWIDTH, AXIS_LINEWIDTH,
@@ -58,17 +58,17 @@ if njit is None:
     def njit(*_args, **_kwargs):
         def _wrap(func):
             return func
-        return _wrap    
+        return _wrap
 #
 # QT Libraries
 # ----------------------------------------
 try:
     from PyQt6.QtCore import (
-        Qt, QObject, QTimer, QThread, pyqtSlot, QStandardPaths, pyqtSignal, 
-        QCoreApplication, 
+        Qt, QObject, QTimer, QThread, pyqtSlot, QStandardPaths, pyqtSignal,
+        QCoreApplication,
     )
     from PyQt6.QtWidgets import (
-        QLineEdit, QSlider,QTabWidget, QWidget, QVBoxLayout, 
+        QLineEdit, QSlider,QTabWidget, QWidget, QVBoxLayout,
     )
     from PyQt6.QtGui import ( QBrush, QColor, QGuiApplication,
                               QOpenGLContext
@@ -78,11 +78,11 @@ try:
 #
 except Exception:
     from PyQt5.QtCore import (
-        Qt, QObject, QTimer, QThread, pyqtSlot, QStandardPaths, pyqtSignal, 
+        Qt, QObject, QTimer, QThread, pyqtSlot, QStandardPaths, pyqtSignal,
         QCoreApplication,
     )
     from PyQt5.QtWidgets import (
-        QLineEdit, QSlider, QTabWidget, QWidget, QVBoxLayout, 
+        QLineEdit, QSlider, QTabWidget, QWidget, QVBoxLayout,
     )
     from PyQt5.QtGui import ( QBrush, QColor, QGuiApplication,
                               QOpenGLContext
@@ -188,8 +188,8 @@ if USE_PARSERACCEL:
 
     if allow_c_parser:
         try:
-            from helpers.line_parsers import simple_parser
-            from helpers.line_parsers import header_parser
+            from .line_parsers import simple_parser
+            from .line_parsers import header_parser
             hasFastParser = True
             PARSER_BACKEND = "helpers.line_parsers"
             PARSER_VERSION = _detect_parser_version()
@@ -213,13 +213,13 @@ else:
 
 useFastParser = hasFastParser and USE_PARSERACCEL
 #
-from helpers.Circular_Buffer import (
+from .Circular_Buffer import (
     CircularBuffer,
     hasNUMBA as hasNUMBA_CBUFFER,
     NUMBA_IMPORT_ERROR as NUMBA_IMPORT_ERROR_CBUFFER,
 )
 #
-from helpers.General_helper import (clip_value, rotate, color_to_rgba, rgbafloat_to_rgbaint,
+from .General_helper import (clip_value, rotate, color_to_rgba, rgbafloat_to_rgbaint,
                                     select_file, confirm_overwrite_append, is_widget_gl_free,
                                     connect, disconnect)
 #
@@ -308,7 +308,7 @@ class QChart(QObject):
         on_throughputTimer() reports points per second drawn on chart
 
     Functions
-        updatePlot() the main chart update function called by timer 
+        updatePlot() the main chart update function called by timer
         process_lines_header() python text to data parser with header
         process_lines_simple() python text to data parser without header
         fast_process_lines_header() C accelerated text to data parser with header
@@ -348,7 +348,7 @@ class QChart(QObject):
         # Making sure we have access to the User Interface, Serial and Serial Worker
         if ui is None:
             self.logger.log(
-                logging.ERROR, 
+                logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Need to have access to User Interface"
             )
             raise ValueError("User Interface (ui) is required but was not provided.")
@@ -371,13 +371,13 @@ class QChart(QObject):
 
         # ─── Replace the GraphicsView widget in the User Interface (ui) with the pyqtgraph plot
         self.tabWidget    = self.ui.findChild(QTabWidget,     "tabWidget_MainWindow")
-        self.plotterPage  = self.ui.findChild(QWidget,        "Plotter") 
-        self.monitorPage  = self.ui.findChild(QWidget,        "Monitor") 
+        self.plotterPage  = self.ui.findChild(QWidget,        "Plotter")
+        self.monitorPage  = self.ui.findChild(QWidget,        "Monitor")
         self.chartView    = self.ui.findChild(QWidget,        "chartView")
 
         self.chartFPLInitialized = False                                       # flag to indicate if the chart has been initialized
         self.chartPGInitialized  = False                                       # flag to indicate if the chart has been initialized
-        
+
         self.legend = None                                                     # handle to the legend in the plot
         self.legend_entries = []                                               # handles to the legend entries in the plot
         self.pg_live_follow_x = True                                           # live-follow x unless user inspects manually
@@ -410,7 +410,7 @@ class QChart(QObject):
         self.horizontalSlider.setValue(int(self.maxPoints))
         self.lineEdit = self.ui.findChild(QLineEdit, "lineEdit_Horizontal_Zoom")
         self.lineEdit.setText(str(self.maxPoints))
-        
+
         self.textDataSeparator = PARSE_DEFAULT_NAME                            # default data separator
         # self.ui.comboBoxDropDown_DataSeparator.blockSignals(True)
         # index = self.ui.comboBoxDropDown_DataSeparator.findText(self.textDataSeparator) # find default data separator in drop down
@@ -455,9 +455,9 @@ class QChart(QObject):
         # Report startup capability state immediately. Route to parent log handler
         # when available; otherwise fall back to local console logger.
         self.report_acceleration_status()
-        
+
         self.logger.log(
-            logging.INFO, 
+            logging.INFO,
             f"[{self.instance_name[:15]:<15}]: QChart initialized."
         )
 
@@ -531,21 +531,21 @@ class QChart(QObject):
 
         if not getattr(self, "chartPGInitialized", False):
 
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Attempting to initialize PyQtGraph."
             )
 
             if self.initChartPG():
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: PyQtGraph Initialization successful."
                 )
                 self.ui.statusBar().showMessage('Chart set to PyQtGraph.', 2000)
             else:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: PyQtGraph Initialization failed, retrying."
                 )
         else:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: chartPG already initialized."
                 )
 
@@ -582,7 +582,7 @@ class QChart(QObject):
                 # ChartView is not established.
                 # Switch to the plotter tab temporarily
 
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Switching to plotter tab."
                 )
 
@@ -600,7 +600,7 @@ class QChart(QObject):
                 if tab_widget.currentIndex() != prev_tab_index and prev_tab_index is not None:
                     tab_widget.setCurrentIndex(prev_tab_index)
 
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: Switching tab back."
                 )
 
@@ -609,23 +609,23 @@ class QChart(QObject):
                 QTimer.singleShot(100, self.fpl_figure_init)
                 return
 
-            self.logSignal.emit(logging.INFO, 
+            self.logSignal.emit(logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Attempting to initialize FastPlotLib."
             )
 
             if self.initChartFPL():
-                self.logSignal.emit(logging.INFO, 
+                self.logSignal.emit(logging.INFO,
                     f"[{self.instance_name[:15]:<15}]: FastPlotLib initialization successful."
                 )
                 self.ui.statusBar().showMessage('Chart set to FastPlotLib.', 2000)
             else:
-                self.logSignal.emit(logging.ERROR, 
+                self.logSignal.emit(logging.ERROR,
                     f"[{self.instance_name[:15]:<15}]: FastPlotLib initialization failed, switching to PyQtGraph."
                 )
                 QTimer.singleShot(500, self.fpl_figure_init)
 
         else:
-            self.logSignal.emit(logging.WARNING, 
+            self.logSignal.emit(logging.WARNING,
                     f"[{self.instance_name[:15]:<15}]: chartFPL already initialized."
                 )
 
@@ -635,7 +635,7 @@ class QChart(QObject):
 
     def initChartPG(self) -> bool:
         """
-        Initialize the pyqtgraph chart. 
+        Initialize the pyqtgraph chart.
         We want to do this after the UI is fully set up.
         """
 
@@ -645,7 +645,7 @@ class QChart(QObject):
         self.ui.radioButton_useFPL.setChecked(False)
         self.ui.radioButton_useFPL.setEnabled(False)
         self.ui.pushButton_ChartSaveFigure.setText("Save Figure SVG")
-        
+
         fg_rgba = rgbafloat_to_rgbaint(AXIS_FONT_COLOR)
         pg.setConfigOptions(
             antialias = False,
@@ -654,7 +654,7 @@ class QChart(QObject):
 
         try:
             tic = time.perf_counter()
-            
+
             # Embed the pyQtGraph Widget into the first page:
             layoutPG = self.chartView.layout()
             if layoutPG is None:
@@ -673,7 +673,7 @@ class QChart(QObject):
             self.chartWidgetPG.setLabel("bottom", "Sample", units="")
             self.chartWidgetPG.setTitle("Chart")
 
-            # Obtain the ViewBox 
+            # Obtain the ViewBox
             # and set passing, autorange and mouse interaction
             self.viewBox = self.chartWidgetPG.getViewBox()
             self.viewBox.setDefaultPadding(0)                                  # no padding when auto ranging
@@ -703,17 +703,17 @@ class QChart(QObject):
             # self.pg_updateAxesTicks(axis="y",n_major=MAJOR_TICKS, n_minor=MINOR_TICKS)
 
             self.logSignal.emit(
-                logging.INFO, 
+                logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Created PyQtGraph figure in {time.perf_counter() - tic:.2f} seconds"
             )
 
             self.chartPGInitialized = True
 
             return True
-        
+
         except Exception as e:
             self.logSignal.emit(
-                logging.ERROR, 
+                logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to create PyQtGraph figure: {e}"
             )
             return False
@@ -740,7 +740,7 @@ class QChart(QObject):
             except Exception:
                 pass
             # Will color labels in pg_updateLegend if global option not supported
-        
+
         # Cache last applied style so we can avoid redundant work
         self._pg_legend_style = {"bg": tuple(bg_rgba), "font": tuple(font_rgba)}
         return legend
@@ -773,7 +773,7 @@ class QChart(QObject):
         # Set global label text color once
         font_rgba = rgbafloat_to_rgbaint(LEGEND_FONT_COLOR)
         font_qc   = QColor(*font_rgba)
-        
+
         if hasattr(legend, "setLabelTextColor"):
             try:
                 legend.setLabelTextColor(font_qc)
@@ -826,11 +826,11 @@ class QChart(QObject):
             pass
 
     # @profile
-    def pg_updateAxesTicks(self, 
-                    axis="x", 
-                    lo=None, 
-                    hi=None, 
-                    n_major=MAJOR_TICKS, 
+    def pg_updateAxesTicks(self,
+                    axis="x",
+                    lo=None,
+                    hi=None,
+                    n_major=MAJOR_TICKS,
                     n_minor=MINOR_TICKS
         ):
         """
@@ -859,7 +859,7 @@ class QChart(QObject):
             except Exception:
                 return
 
-        if hi < lo: 
+        if hi < lo:
             lo, hi = hi, lo                                                    # handle reversed ranges
 
         span = hi - lo
@@ -898,7 +898,7 @@ class QChart(QObject):
             k = max(1, int(round(MIN_MINOR_PX / minor_px)))
             minor = major / max(1, minor_div // k)
 
-        # Subplot cache to avoid churn 
+        # Subplot cache to avoid churn
         if not hasattr(self, "axisTickState"):
             self.axisTickState = {"x": {"major":None,"minor":None},
                                   "y": {"major":None,"minor":None}}
@@ -949,7 +949,7 @@ class QChart(QObject):
 
         if rng is None:
             self.logSignal.emit(
-                logging.ERROR, 
+                logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Range is None."
             )
             return
@@ -958,29 +958,29 @@ class QChart(QObject):
             (x_lo, x_hi), (y_lo, y_hi) = rng
         except Exception:
             self.logSignal.emit(
-                logging.ERROR, 
+                logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Failed to unpack viewBox range: {rng}. Should be list of lists [[x_min, x_max], [y_min, y_max]]"
             )
-            return  
+            return
 
         if not np.isfinite([x_lo, x_hi, y_lo, y_hi]).all():
             self.logSignal.emit(
-                logging.ERROR, 
+                logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: Range is not finite: {rng}."
             )
             return
 
         if axis_changed is None:
             self.logSignal.emit(
-                logging.ERROR, 
+                logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: axis changes is None."
             )
             return
 
-            
+
         if  not isinstance(axis_changed, (list, tuple)):
             self.logSignal.emit(
-                logging.ERROR, 
+                logging.ERROR,
                 f"[{self.instance_name[:15]:<15}]: axis changed is not a list or tuple."
             )
             return
@@ -1101,8 +1101,8 @@ class QChart(QObject):
         #
         # If the UI window uses discreteGPU or OpenGL, fastplotlib will need to use
         # the same adapter and can not switch to Vulkan or dedicated GPU.
-        # Since its possible that user initializes fastplotlib on "wrong" adapter 
-        # we need to assure that system does not panic and make sure the adapters 
+        # Since its possible that user initializes fastplotlib on "wrong" adapter
+        # we need to assure that system does not panic and make sure the adapters
         # is compatible with the widget that will enclose it.
         # The main issue arises if OpenGL context is present in the UI, as that
         # requires fastplotlib to use an OpenGL compatible adapter.
@@ -1167,11 +1167,11 @@ class QChart(QObject):
         #     try:
         #         with open(CACHE_FILE, "rb") as f:
         #             initial_cache_data = f.read()
-        #             self.logger.log(logging.INFO, 
+        #             self.logger.log(logging.INFO,
         #                 f"[{self.instance_name[:15]:<15}]: Loaded pipeline cache: {len(initial_cache_data)} bytes from {CACHE_FILE}"
         #             )
         #     except Exception as e:
-        #         self.logger.log(logging.ERROR, 
+        #         self.logger.log(logging.ERROR,
         #             f"[{self.instance_name[:15]:<15}]: Failed to read cache: {e}"
         #         )
         #
@@ -1179,19 +1179,19 @@ class QChart(QObject):
         # adapter.request_device_sync(pipeline_cache=initial_cache_data)
 
         tic = time.perf_counter()
-    
+
         layoutFPL = self.chartView.layout()
         if layoutFPL is None:
             layoutFPL = QVBoxLayout(self.chartView)
             layoutFPL.setContentsMargins(0, 0, 0, 0)
             layoutFPL.setSpacing(0)
-        
+
         # ─────── Create the fastplotlib figure ────────────────
-        
+
         # Figure and Layout
         #   this takes a couple of seconds
         self.fpl_fig = fpl.Figure(
-            shape=(1,1), 
+            shape=(1,1),
             names=[["Line Plots"]],
             canvas_kwargs={"parent": self.chartView},
             size=(self.chartView.size().width(), self.chartView.size().height()),
@@ -1260,7 +1260,7 @@ class QChart(QObject):
         self.fpl_subplot.docks["bottom"].background_color = pygfx.Color(CHART_BACKGROUND_COLOR)
 
         # Y label bottom → top
-        
+
         q = rotate(pi/2.0, 0., 0., 1.)                                         # rotate 90 deg around z-axis
         self.fpl_subplot.docks["left"].size = 30
         self.fpl_subplot.docks["left"].add_text(
@@ -1371,7 +1371,7 @@ class QChart(QObject):
         self.chartFPLInitialized = True
 
         self.logSignal.emit(
-            logging.INFO, 
+            logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Created FastPlotLib figure in {time.perf_counter() - tic:.2f} seconds"
         )
         return True
@@ -1450,7 +1450,7 @@ class QChart(QObject):
 
             try:
                 self.fpl_subplot.delete_graphic(line)
-            except Exception: 
+            except Exception:
                 pass
             color = self.pensFPL[i % len(self.pensFPL)] if hasattr(self, "pensFPL") else (1, 1, 1, 1)
             new_line = self.fpl_subplot.add_line(
@@ -1460,7 +1460,7 @@ class QChart(QObject):
                 thickness=LINEWIDTH
             )
             self.data_traces[i] = new_line
-        
+
         self.data_trace_capacity = new_capacity
 
         # If no finite data was found, fallback to previous or safe defaults
@@ -1545,14 +1545,14 @@ class QChart(QObject):
         # Store ranges
         if x_finite and y_finite and x_camera_finite and y_camera_finite:
             self.fpl_last_ranges = {
-                # "x": (x_min, x_max, x_span, x_center, x_limits_lo, x_limits_hi), 
+                # "x": (x_min, x_max, x_span, x_center, x_limits_lo, x_limits_hi),
                 # "y": (y_min, y_max, y_span, y_center, y_limits_lo, y_limits_hi)}
-                "x": (x_min, x_max, x_span, x_center), 
+                "x": (x_min, x_max, x_span, x_center),
                 "y": (y_min, y_max, y_span, y_center)}
         else:
             # Keep previous ranges if camera update not possible
             pass
-        
+
         # Rebuild legend if present
 
         labels = self.channel_names if getattr(self, "channel_names", None) else []
@@ -1570,7 +1570,7 @@ class QChart(QObject):
 
         legend_dock = self.fpl_subplot.docks["right"]                          # options are right, left, top, bottom
         legend_dock.background_color = pygfx.Color(LEGEND_BACKGROUND_COLOR)
-        legend_dock.size = 80                                                  # if top/bottom dock that is the height of dock in pixels, 
+        legend_dock.size = 80                                                  # if top/bottom dock that is the height of dock in pixels,
                                                                                # if left/right dock that is the width of the dock in pixels,
         return Legend(
             plot_area=legend_dock,                                             # the plot area to attach the legend to
@@ -1708,7 +1708,7 @@ class QChart(QObject):
             k = max(1, int(round(MIN_MINOR_PX / y_minor_px)))
             y_minor = y_major / max(1, n_minor // k)
 
-        # Subplot cache to avoid churn 
+        # Subplot cache to avoid churn
         if not hasattr(self, "axisTickState"):
             self.axisTickState = {"x": {"major":None},
                                   "y": {"major":None}}
@@ -1751,7 +1751,7 @@ class QChart(QObject):
     def fpl_save_pipeline_cache(self):
         """
         Save the GPU pipeline cache to a file.
-        
+
         This is not yet exposed by wgpu
         A precompiled gpu pipeline would improve startup time
         """
@@ -1830,7 +1830,7 @@ class QChart(QObject):
 
         tic = time.perf_counter()
 
-        # Retrieve and prepare the data 
+        # Retrieve and prepare the data
         # ----------------------------------------
 
         oldest_sample, newest_sample = self.buffer.counter                     # sample numbers
@@ -1842,7 +1842,7 @@ class QChart(QObject):
         self.previous_newest_sample = newest_sample
 
         if delta_samples >= self.maxPoints:
-            delta_samples = self.maxPoints                                     # too much new data, only take the last maxPoints and skip the rest 
+            delta_samples = self.maxPoints                                     # too much new data, only take the last maxPoints and skip the rest
 
         if not USE_FASTPLOTLIB:
             # PyQtGraph does not support sliced data update
@@ -1870,9 +1870,9 @@ class QChart(QObject):
                 if not USE_FASTPLOTLIB:
                     # PyQtGraph ─────────────────────────────────
                     new_data_trace = self.chartWidgetPG.plot(
-                        [], 
-                        [], 
-                        pen=self.pensPG[(idx+num_traces) % len(self.pensPG)], 
+                        [],
+                        [],
+                        pen=self.pensPG[(idx+num_traces) % len(self.pensPG)],
                         name=f"Trace {idx}",
                         antialias=False,                                       # AA is expensive; keep it off for streams
                         clipToView=True,                                       # do less work: only process visible vertices
@@ -1886,7 +1886,7 @@ class QChart(QObject):
                     new_arr = np.full((self.data_trace_capacity, 3), np.nan, dtype=np.float32)
                     new_arr[:, 2] = 0.0                                        # (z) value is zero everywhere
                     new_data_trace = self.fpl_subplot.add_line(
-                        new_arr, 
+                        new_arr,
                         isolated_buffer=False,                                 # since we already allocated the buffer above, we use shared buffers for better performance
                         colors=pygfx.Color(self.pensFPL[(idx+num_traces) % len(self.pensFPL)]), # color for the line
                         thickness=LINEWIDTH                                    # line width
@@ -1907,7 +1907,7 @@ class QChart(QObject):
                 else:
                     self.fpl_subplot.delete_graphic(old_data_trace)
 
-        #                 
+        #
         # Plot data
         # ----------------------------------------
 
@@ -1952,7 +1952,7 @@ class QChart(QObject):
             else:
                 self.y_min = -1.0
                 self.y_max = 1.0
-                    
+
             if not isfinite(self.y_min):
                 self.y_min = -1.0
 
@@ -1979,7 +1979,7 @@ class QChart(QObject):
             # Since fastplotlib requires a fixed size buffer, unused data points are NaN
             # Unused data points are at the end of the data trace
             # We use NaN filtering when adding new data to the buffer
-            #   if we were to keep NaNs they break the plot lines in fastplotlib 
+            #   if we were to keep NaNs they break the plot lines in fastplotlib
             #   this will result in data traces with different lengths of valid data
             #   we keep track of valid data in the data trace with write_idx
             # Therefore we implement for each data trace:
@@ -2094,8 +2094,8 @@ class QChart(QObject):
             if not isfinite(self.y_min):
                 self.y_min = -1.0
             if not isfinite(self.y_max):
-                self.y_max = 1.0    
- 
+                self.y_max = 1.0
+
         # Adjust X and Y ranges, Tick marks, Camera View
         # ----------------------------------------
 
@@ -2204,7 +2204,7 @@ class QChart(QObject):
                 # y_limits_hi = ceil (y_max / y_major) * y_major
                 # self.fpl_subplot.axes.y_limits = (y_limits_lo, y_limits_hi)
 
-                # Now set the camera state, 
+                # Now set the camera state,
                 # we need to update it each iteration as x values increase each update
                 self.fpl_camera.set_state({
                     "width": x_span * CAMERA_PAD,
@@ -2228,7 +2228,7 @@ class QChart(QObject):
                 # self.fpl_subplot.center_scene()
 
                 self.fpl_last_ranges = {
-                    "x": (x_min, x_max, x_span, x_center), 
+                    "x": (x_min, x_max, x_span, x_center),
                     "y": (y_min, y_max, y_span, y_center)}
             else:
                 # Previous values
@@ -2329,12 +2329,12 @@ class QChart(QObject):
 
                 # Store values for next update
                 self.fpl_last_ranges = {
-                    "x": (x_min_prev, x_max_prev, x_span_prev, x_center_prev), 
+                    "x": (x_min_prev, x_max_prev, x_span_prev, x_center_prev),
                     "y": (y_min_prev, y_max_prev, y_span_prev, y_center_prev)}
 
         # Adjust legend
         # ----------------------------------------
-                
+
         # Make channel names consistent
         if (self.channel_names_dict != self.prev_channel_names_dict):
             # Channel names changed
@@ -2442,7 +2442,7 @@ class QChart(QObject):
                 else:
                     self.fpl_subplot.delete_graphic(data_trace)
             self.data_traces.clear()
-        
+
         # Legend
         if getattr(self, "legend", None) is not None:
             if not USE_FASTPLOTLIB:
@@ -2463,7 +2463,7 @@ class QChart(QObject):
                 self.fpl_fig.clear()
 
         self.logSignal.emit(
-            logging.INFO, 
+            logging.INFO,
             f"[{self.instance_name[:15]:<15}]: Cleaned up."
         )
 
@@ -2507,7 +2507,7 @@ class QChart(QObject):
 
     # - Split data into segments
     #
-    # "1 2 3 4, 4 5 6 7"      > ["1 2 3 4", " 4 5 6 7"] 
+    # "1 2 3 4, 4 5 6 7"      > ["1 2 3 4", " 4 5 6 7"]
     # " , 1 2 3 4, 4 5 6 7, " > [' ', ' 1 2 3 4', ' 4 5 6 7', ' ']
     SEG_SPLIT = staticmethod(lambda s: s.split(','))
     NUM_PREFIX = re.compile(r'^[+\-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+\-]?\d+)?')
@@ -2547,7 +2547,7 @@ class QChart(QObject):
                 out[i] = np.nan
         return out
 
-    # Python implementation 
+    # Python implementation
     @profile
     def process_lines_simple(self, lines, encoding="utf-8") -> None:
         """
@@ -2563,7 +2563,7 @@ class QChart(QObject):
            numbers separated by space belong to the same channel and the comma introduces a new channel.
         Some lines might contain more channels than others, in that case the channels without new data
            are assigned NaNs and the location for the next data insert point is increased.
-        The next new data insert location is set for all channels to be the same and is incremented 
+        The next new data insert location is set for all channels to be the same and is incremented
            after each line by the largest number of data points found for any channel in that line.
         Unassigned numbers in a channel remain NaN which is the initialization value of the data array.
         """
@@ -2578,7 +2578,7 @@ class QChart(QObject):
         parse_numbers = self.parse_segment_numbers
         ensure_capacity = self.ensure_capacity
         channel_names_dict = self.channel_names_dict
-        
+
         row = 0                                                                # Tracks row position in data_array
         max_len_segment = 0                                                    # Track longest segment
         num_columns = 0                                                        # Track maximum column index
@@ -2614,13 +2614,13 @@ class QChart(QObject):
                 data_array, rows, cols = ensure_capacity(
                     data_array, rows, cols, row_end, i
                 )
-                
+
                 # Store the values in `data_array`
                 data_array[row:row_end, i] = segment_data
                 max_len_segment = max(max_len_segment, segment_data.size)
 
             new_samples += max_len_segment
-            row += max_len_segment  
+            row += max_len_segment
 
             num_columns = max(len(segments), num_columns)                      # keep track of columns used
 
@@ -2685,7 +2685,7 @@ class QChart(QObject):
 
     # - Split data into segments
     #
-    # "1 2 3 4, 4 5 6 7"      > ["1 2 3 4", " 4 5 6 7"] 
+    # "1 2 3 4, 4 5 6 7"      > ["1 2 3 4", " 4 5 6 7"]
     # " , 1 2 3 4, 4 5 6 7, " > [' ', ' 1 2 3 4', ' 4 5 6 7', ' ']
     SEG_SPLIT = staticmethod(lambda s: s.split(','))
 
@@ -2813,13 +2813,13 @@ class QChart(QObject):
         In the simple parser a comma is used to separate data into channels.
         A header is a variable name and the data that follows belongs to that variable.
         A line can contain multiple headers and data segments.
-        A line can be empty or contain empty data segments as well as data without headers. 
-        When a header is followed by data separated by commas, 
-          the data is split into channels and each channel is assigned the variable name 
+        A line can be empty or contain empty data segments as well as data without headers.
+        When a header is followed by data separated by commas,
+          the data is split into channels and each channel is assigned the variable name
           plus an underscore followed by a number indicating the sub channel.
         When data is missing a header, the variable name is the channel number.
         """
-    
+
         # Line 1: "Power: 1 2 3 4, Speed: 5 6 7 8"
         # Line 2: "Power: 4 3 2 1, Speed: 8 7 6 5"
         # Result:
@@ -2831,16 +2831,16 @@ class QChart(QObject):
         #          [4,8],
         #          [3,7],
         #          [2,6],
-        #          [1,5]] 
+        #          [1,5]]
         #
         # Line 1: "Power: 1, 2, 3, 4 Speed: 5, 6, 7, 8"
         # Line 2: "Power: 4, 3, 2, 1 Speed: 8, 7, 6, 5"
         # Result:
         #   Variable index: {"Power_1":0, "Power_2":1, "Power_3":2, "Power_4":3, "Speed_1":4, "Speed_2":5, "Speed_3":6, "Speed_4":7}
         #   Data: [[1,2,3,4,5,6,7,8],
-        #          [4,3,2,1,8,7,6,5]] 
+        #          [4,3,2,1,8,7,6,5]]
         #
-        # Line 1: "Power: 1 2 3 4, 5 6 7 8 Speed:  9 10 11 12, 13 14 15 16" 
+        # Line 1: "Power: 1 2 3 4, 5 6 7 8 Speed:  9 10 11 12, 13 14 15 16"
         # Line 2: "Power: 4 3 2 1, 8 7 6 5 Speed: 12 11 10  9, 16 15 14 13"
         # Result:
         #   Variable index {"Power_1":0, "Power_2":1, "Speed_1":2, "Speed_2":3
@@ -2859,7 +2859,7 @@ class QChart(QObject):
         # Line 4: "Sound: 13 14 Sound: 15 16, Oxygenation: 99"
         # Result:
         #   Variable index: {"Sound}":0, "Blood Pressure":1, "Oxygenation":2}
-        #   Data: 
+        #   Data:
         #   [[  1.  nan  nan]
         #   [   2.  nan  nan]
         #   [   3.  nan  nan]
@@ -3008,7 +3008,7 @@ class QChart(QObject):
         push(data_array[:new_samples, :num_columns])
 
         # Clear only the used portion of `data_array`
-        data_array[:new_samples, :num_columns] = np.nan  
+        data_array[:new_samples, :num_columns] = np.nan
         self.data_array = data_array
         self.channel_names_dict = channel_names_dict
 
@@ -3048,7 +3048,7 @@ class QChart(QObject):
     # ==========================================================================
     # Response Functions to User Interface Signals
     # ==========================================================================
-        
+
     @pyqtSlot(list)
     @profile
     def on_receivedLines(self, lines: list) -> None:
@@ -3089,7 +3089,7 @@ class QChart(QObject):
             self.logSignal.emit(
                 logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Data points received: parsing took {1000 * (toc - tic)} ms"
-            )        
+            )
 
     @pyqtSlot(bytearray)
     @profile
@@ -3100,11 +3100,11 @@ class QChart(QObject):
                 f"[{self.instance_name[:15]:<15}]: Data separator {repr(self.textDataSeparator)} with binary receiver is not supported yet."
             )
             self.warning = False
-        
+
         # will need to implement binary data parsing here
         # will use codec helper
         # should be able to process a wide variety of data types
-        
+
     @pyqtSlot()
     def on_comboBox_DataSeparator(self)-> None:
         ''' user wants to change the data separator '''
@@ -3150,7 +3150,7 @@ class QChart(QObject):
                 # Clear existing data traces if any
                 if not self.ChartTimer.isActive():
                     for data_trace in self.data_traces:
-                        self.chartWidgetPG.removeItem(data_trace) 
+                        self.chartWidgetPG.removeItem(data_trace)
                     self.data_traces.clear()
                     self.pg_clearLegend()
                     self.chartWidgetPG.clear()
@@ -3164,13 +3164,13 @@ class QChart(QObject):
                     self.viewBox.disableAutoRange(pg.ViewBox.YAxis)            # disable autorange, we will set view in updatePlot
 
                     self.viewBox.setLimits(
-                        xMin      = None, 
+                        xMin      = None,
                         xMax      = None,
                         yMin      = None,
                         yMax      = None,
                         minXRange = None,
                         maxXRange = None,
-                        minYRange = None, 
+                        minYRange = None,
                         maxYRange = None
                     )
                 self.pg_last_ranges = None                                     # need to reset because after mouse zoom and pan we need to start fresh
@@ -3281,7 +3281,7 @@ class QChart(QObject):
                 minXRange = x_span * min_frac                                  # 1% of data span → max zoom in
                 maxXRange = x_span * max_frac                                  # 4× data span → data is 25% of view
                 minYRange = y_span * min_frac
-                maxYRange = y_span * max_frac            
+                maxYRange = y_span * max_frac
                 for name, val in [
                     ("x_min_range", minXRange), ("x_max_range", maxXRange),
                     ("y_min_range", minYRange), ("y_max_range", maxYRange),
@@ -3318,7 +3318,7 @@ class QChart(QObject):
             self.throughputTimer.stop()
             self.throughputUpdate.emit(0.0, 0.0, "chart")
 
-            
+
             # Enable mouse pan/zoom mode
             if not USE_FASTPLOTLIB:
                 # PyQtGraph ─────────────────────────────────
@@ -3380,7 +3380,7 @@ class QChart(QObject):
                 minXRange = x_span * min_frac                                  # 1% of data span → max zoom in
                 maxXRange = x_span * max_frac                                  # 4× data span → data is 25% of view
                 minYRange = y_span * min_frac
-                maxYRange = y_span * max_frac            
+                maxYRange = y_span * max_frac
                 for name, val in [
                     ("x_min_range", minXRange), ("x_max_range", maxXRange),
                     ("y_min_range", minYRange), ("y_max_range", maxYRange),
@@ -3437,13 +3437,13 @@ class QChart(QObject):
                     self.viewBox.disableAutoRange(pg.ViewBox.XAxis)            # disable autorange, we will set view in updatePlot
                     self.viewBox.disableAutoRange(pg.ViewBox.YAxis)            # disable autorange, we will set view in updatePlot
                     self.viewBox.setLimits(
-                        xMin      = None, 
+                        xMin      = None,
                         xMax      = None,
                         yMin      = None,
                         yMax      = None,
                         minXRange = None,
                         maxXRange = None,
-                        minYRange = None, 
+                        minYRange = None,
                         maxYRange = None
                     )
 
@@ -3622,7 +3622,7 @@ class QChart(QObject):
             mode = confirm_overwrite_append(offer_append=False, parent=self)
             if mode == "c":
                 return
-        
+
         was_running = self.ChartTimer.isActive()
         if was_running:
             self.ChartTimer.stop()                                             # Can not update plot while its saved
@@ -3640,7 +3640,7 @@ class QChart(QObject):
                 # Use FastPlotLib exporter, needs imageio
                 #  only support ".png", ".jpg", ".tiff"
                 self.fpl_fig.export(str(file_path))
-            
+
             self.logSignal.emit(
                 logging.INFO,
                 f"[{self.instance_name[:15]:<15}]: Chart saved as {file_path}."
@@ -3688,7 +3688,7 @@ class QChart(QObject):
         # Set limits and updated maxPoints and tick marks
         new_value = int(clip_value(value, 16, MAX_ROWS))
         self.maxPoints = new_value
-        
+
         self.x_base = np.arange(-self.maxPoints+1, 1, dtype=np.float64)
         self.x_view = np.empty_like(self.x_base)                               # x values adjusted for current view (sample numbers)
 
@@ -3735,7 +3735,7 @@ class QChart(QObject):
         # Set limits and updated maxPoints and tick marks
         new_value = int(clip_value(value, 16, MAX_ROWS))
         self.maxPoints = new_value
-        
+
         self.x_base = np.arange(-self.maxPoints+1, 1, dtype=np.float64)
         self.x_view = np.empty_like(self.x_base)                               # x values adjusted for current view (sample numbers)
 
