@@ -1,6 +1,6 @@
 # Graphical User Interface for Serial Communication
 
-![Serial Monitor](assets/icon_96.png) **SerialUI** provides a graphical interface to send and receive text and data from the serial port or BLE connection (Nordic UART Service).
+![Serial Monitor](src/serialui/assets/icon_96.png) **SerialUI** provides a graphical interface to send and receive text and data from the serial port or BLE connection (Nordic UART Service).
 
 It includes a serial plotter for displaying numerical data.
 
@@ -8,14 +8,14 @@ It offers features beyond other serial terminals. For example, in addition to fe
 - Serial over BLE (NUS)
 - Recording of received data
 - Extended charting of the data
-  
+
 Throughput is similar to other serial terminal programs.
 
 This program is written in python using PyQt <img src="docs/pyqt.png" height="30"/> and Bleak <img src="docs/bleak.png" height="30"/> as well as PyQtGraph <img src="docs/pyqtgraph.png" height="30"/> or fastplotlib <img src="docs/fastplotlib.png" height="30"/>.
 
 Under development are binary data transmission and indicating data with display elements other than a chart.
 
-The main program is `SerialUI.py`. It uses files in the `assets`, `docs` and `helper` folders.
+The main program is packaged as `serialui` (under `src/serialui/`). Supporting assets, docs, and helpers are bundled within the package.
 
 ## Video
 
@@ -40,7 +40,7 @@ Serial BLE extension
 
 ## How to Use This Program
 
-Either use the executable from the release assets or run the program with `python3 SerialUI.py` 
+Either use the executable from the release assets or install from source and run `serialui` from the command line.
 
 - [Usage instructions](docs/Instructions.md).
 - [Supplemental instructions](docs/Supplementalinstructions.md).
@@ -58,7 +58,7 @@ Use the executable from the release assets on Github. No packages will need to b
 #### First run notes
 Operating systems may block downloaded executables until you explicitly allow them.
 
-- `Windows`: If SmartScreen appears, use `More info` then `Run anyway`. If needed, in power shell unblock the extracted files `Get-ChildItem .\SerialUI -Recurse -File | Unblock-File` 
+- `Windows`: If SmartScreen appears, use `More info` then `Run anyway`. If needed, in power shell unblock the extracted files `Get-ChildItem .\SerialUI -Recurse -File | Unblock-File`
 - `macOS`: If Gatekeeper blocks launch, right-click the app and choose `Open` once. If still blocked, remove quarantine recursively in shell:
   `xattr -dr com.apple.quarantine /path/to/SerialUI.app`
 - `Linux`: After unzip, ensure executable bit is set in shell:
@@ -73,19 +73,27 @@ After first launch, you can run self-tests from a terminal to make sure the acce
 
 ### From Source
 
-Clone this repository into a folder where you store python programs and install the packages described below.
+Clone this repository and install with pip:
 
-To work of the source code either download the zip or `git clone https://github.com/uutzinger/SerialUI.git` to that folder.
+```bash
+git clone https://github.com/uutzinger/SerialUI.git
+cd SerialUI
+python -m venv .venv
+source .venv/bin/activate   # Linux/macOS
+# .venv\Scripts\activate    # Windows
+pip install -e .
+```
 
-This program has dependencies. You can install them with `scripts/setup.sh` on Linux and MacOS and `scripts\setup.ps1` on Windows.
+Or use the provided setup scripts (`setup_venv.sh` / `setup_venv.bat`).
 
-There is build script in `scripts/release.sh` or `release.ps1` to activate the C accelerated text parser with `./scripts/release.sh --build-c-accelerated` or `./scripts/release.ps1 -build-c-accelerated`
- 
-This requires a C++ compiler and the python packages `pybind11` and `setuptools` to be available.
+Then run with:
+```bash
+serialui
+```
 
 ## Enabling / Disabling Features
 
-The programs configuration is stored in `config.py` (main folder). Here you can enable/disable features such as:
+The program's configuration is stored in `src/serialui/config.py`. Here you can enable/disable features such as:
 - USE_FASTPLOTLIB: Plotting with fastplotlib instead of pyqtgraph
 - USE_BLE: enable serial communication over BLE
 - USE_BLUETOOTHCTL: enable pairing and trusting of BLE devices (available on Unix like systems)
@@ -102,7 +110,7 @@ The NUS provides a serial interface similar to regular USB interface for microco
 
 The implementation on a microcontroller requires more programming effort than a simple `Serial.print` especially if secure connections and automatic reconnection is considered. BLE connections can be optimized for low power, extended distance or high throughput.
 
-A detailed example is the [BLE test program](./Arduino_programs/testBLESerial/testBLESerial.ino) which was used to test SerialUI.
+A detailed example is the [BLE test program](./examples/sketches/testBLESerial/testBLESerial.ino) which was used to test SerialUI.
 
 With ESP32-S3 a transfer rate of more than 100kByte/s can be expected when BLE connection is optimized for high throughput.
 
@@ -124,7 +132,7 @@ fastplotlib is not available in the standalone executable and requires customiza
 
 ## Arduino Test Programs
 
-In the `Arduino_programs` folder are example programs that simulate data for serial UART and BLE connection. 
+In the `examples/sketches/` folder are example programs that simulate data for serial UART and BLE connection.
 
 To create your own application remove all the simulations except one and replace it with your code.
 
@@ -142,7 +150,7 @@ The following libraries are used:
 
 - [asyncio for bleak](https://docs.python.org/3/library/asyncio.html)`**`
 - [bleak - BLE](https://github.com/hbldh/bleak)`**`
-- [cobs - serial binary](https://github.com/cmcqueen/cobs-python)`****` 
+- [cobs - serial binary](https://github.com/cmcqueen/cobs-python)`****`
 - [fastplotlib - GPU based charting](https://fastplotlib.org/)`***` beta
 - [datetime](https://docs.python.org/3/library/datetime.html)
 - [difflib - device ID comparison](https://docs.python.org/3/library/difflib.html)
@@ -168,8 +176,8 @@ The following libraries are used:
 - [wmi - USB events](https://timgolden.me.uk/python/wmi/index.html) or [pyudev - USB events](https://pyudev.readthedocs.io/en/latest/)
 - [zlib - compressor](https://docs.python.org/3/library/zlib.html) `***`
 
-[`*`] not required but will accelerate the program, 
-[`**`] needed if BLE is enabled, 
+[`*`] not required but will accelerate the program,
+[`**`] needed if BLE is enabled,
 [`***`] needed if fastplotlib is enabled,
 [`***`] future version
 
